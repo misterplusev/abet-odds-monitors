@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-10-11T17:46:35.663905+00:00",
+ "scanned_at": "2026-10-11T17:48:36.159526+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 83.0,
+ "loop_uptime_min": 85.0,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 431770,
+   "markets": 436855,
    "last_tick_age_s": 0.1
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7999,
-   "last_tick_age_s": 0.2
+   "last_tick_age_s": 0.5
   },
   {
    "venue": "pmglobal",
@@ -36,38 +36,38 @@
   }
  ],
  "totals": {
-  "markets_tracked": 439903,
+  "markets_tracked": 444988,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 39,
-  "gist_errors": 83,
+  "commits": 40,
+  "gist_errors": 85,
   "hot_errors": 0,
-  "kalshi.sweeps": 440,
-  "kalshi.ticks": 7681810,
-  "kalshi.updates": 4515592,
-  "kalshi.ws_ticks": 7681810,
-  "kalshi.ws_trades": 1621945,
-  "novig.sweep_errors": 439,
-  "pmglobal.rest_updates": 5543,
-  "pmglobal.sweeps": 439,
-  "pmglobal.ticks": 60680,
-  "pmglobal.updates": 12477,
+  "kalshi.sweeps": 451,
+  "kalshi.ticks": 7877077,
+  "kalshi.updates": 4630856,
+  "kalshi.ws_ticks": 7877077,
+  "kalshi.ws_trades": 1648725,
+  "novig.sweep_errors": 450,
+  "pmglobal.rest_updates": 5604,
+  "pmglobal.sweeps": 450,
+  "pmglobal.ticks": 61982,
+  "pmglobal.updates": 12620,
   "pmglobal.ws_errors": 7,
-  "pmglobal.ws_msgs": 3217424,
-  "pmglobal.ws_ticks": 16680,
-  "pmus.rest_updates": 12084,
-  "pmus.sweeps": 440,
-  "pmus.ticks": 3527559,
-  "pmus.updates": 12084,
+  "pmglobal.ws_msgs": 3296830,
+  "pmglobal.ws_ticks": 16882,
+  "pmus.rest_updates": 12216,
+  "pmus.sweeps": 451,
+  "pmus.ticks": 3615548,
+  "pmus.updates": 12216,
   "pmus_x.last_count": 7999,
-  "pmus_x.sweeps": 441,
-  "prophetx.ws_errors": 296,
+  "pmus_x.sweeps": 452,
+  "prophetx.ws_errors": 303,
   "px.evt_scanned": 0,
   "pxboard.sweep_errors": 3,
-  "pxboard.sweeps": 436,
-  "supa_errors": 1335
+  "pxboard.sweeps": 447,
+  "supa_errors": 1368
  },
  "arbitrages": []
 }
