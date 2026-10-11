@@ -1,26 +1,26 @@
 {
- "scanned_at": "2026-10-11T03:12:09.379122+00:00",
+ "scanned_at": "2026-10-11T03:14:17.063834+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 209.1,
+ "loop_uptime_min": 211.2,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 505824,
+   "markets": 509698,
    "last_tick_age_s": 0.1
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 8005,
-   "last_tick_age_s": 5.4
+   "last_tick_age_s": 0.2
   },
   {
    "venue": "pmglobal",
    "state": "OK",
    "markets": 149,
-   "last_tick_age_s": 1.1
+   "last_tick_age_s": 0.2
   },
   {
    "venue": "novig",
@@ -36,39 +36,39 @@
   }
  ],
  "totals": {
-  "markets_tracked": 513978,
+  "markets_tracked": 517852,
   "pairs_married": 2,
   "arbitrages": 2
  },
  "stats": {
-  "commits": 101,
-  "gist_errors": 216,
+  "commits": 102,
+  "gist_errors": 218,
   "hot_errors": 0,
   "kalshi.rest_updates": 14,
-  "kalshi.sweeps": 1125,
-  "kalshi.ticks": 13863851,
-  "kalshi.updates": 7474544,
-  "kalshi.ws_ticks": 13863825,
-  "kalshi.ws_trades": 3452951,
-  "novig.sweep_errors": 1124,
-  "pairs_blocked_antonym_date": 1406,
-  "pmglobal.rest_updates": 8239,
-  "pmglobal.sweeps": 1124,
-  "pmglobal.ticks": 137536,
-  "pmglobal.updates": 18053,
+  "kalshi.sweeps": 1136,
+  "kalshi.ticks": 13954179,
+  "kalshi.updates": 7519345,
+  "kalshi.ws_ticks": 13954153,
+  "kalshi.ws_trades": 3476619,
+  "novig.sweep_errors": 1135,
+  "pairs_blocked_antonym_date": 1420,
+  "pmglobal.rest_updates": 8252,
+  "pmglobal.sweeps": 1135,
+  "pmglobal.ticks": 138768,
+  "pmglobal.updates": 18080,
   "pmglobal.ws_errors": 14,
-  "pmglobal.ws_msgs": 8562960,
-  "pmglobal.ws_ticks": 25036,
-  "pmus.rest_updates": 19984,
-  "pmus.sweeps": 1124,
-  "pmus.ticks": 8998860,
-  "pmus.updates": 19984,
+  "pmglobal.ws_msgs": 8568374,
+  "pmglobal.ws_ticks": 25168,
+  "pmus.rest_updates": 20094,
+  "pmus.sweeps": 1136,
+  "pmus.ticks": 9094848,
+  "pmus.updates": 20094,
   "pmus_x.last_count": 7999,
-  "pmus_x.sweeps": 1125,
-  "prophetx.ws_errors": 749,
+  "pmus_x.sweeps": 1137,
+  "prophetx.ws_errors": 756,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 1124,
-  "supa_errors": 3395
+  "pxboard.sweeps": 1135,
+  "supa_errors": 3429
  },
  "arbitrages": [
   {
@@ -92,7 +92,7 @@
    },
    "total_cost_cents": 9,
    "edge_bps": 9100,
-   "detected_at": "2026-10-11T03:12:09.379059+00:00"
+   "detected_at": "2026-10-11T03:14:17.063763+00:00"
   },
   {
    "buy_yes": {
@@ -115,7 +115,7 @@
    },
    "total_cost_cents": 94,
    "edge_bps": 600,
-   "detected_at": "2026-10-11T03:12:09.379077+00:00"
+   "detected_at": "2026-10-11T03:14:17.063784+00:00"
   }
  ]
 }
