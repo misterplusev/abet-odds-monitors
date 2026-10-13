@@ -1,13 +1,13 @@
 {
- "scanned_at": "2026-10-13T21:41:16.548472+00:00",
+ "scanned_at": "2026-10-13T21:43:26.462327+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 54.8,
+ "loop_uptime_min": 57.0,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 170670,
+   "markets": 174298,
    "last_tick_age_s": 0.0
   },
   {
@@ -19,7 +19,7 @@
   {
    "venue": "pmglobal",
    "state": "OK",
-   "markets": 124,
+   "markets": 126,
    "last_tick_age_s": 0.1
   },
   {
@@ -36,37 +36,38 @@
   }
  ],
  "totals": {
-  "markets_tracked": 178793,
+  "markets_tracked": 182423,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 25,
-  "gist_errors": 53,
+  "commits": 26,
+  "gist_errors": 55,
   "hot_errors": 0,
-  "kalshi.sweeps": 303,
-  "kalshi.ticks": 2226036,
-  "kalshi.updates": 1122641,
-  "kalshi.ws_ticks": 2226036,
-  "kalshi.ws_trades": 594347,
-  "novig.sweep_errors": 302,
-  "pmglobal.rest_updates": 1473,
-  "pmglobal.sweeps": 302,
-  "pmglobal.ticks": 37397,
-  "pmglobal.updates": 3492,
+  "kalshi.rest_updates": 4,
+  "kalshi.sweeps": 315,
+  "kalshi.ticks": 2313200,
+  "kalshi.updates": 1164604,
+  "kalshi.ws_ticks": 2313191,
+  "kalshi.ws_trades": 616773,
+  "novig.sweep_errors": 314,
+  "pmglobal.rest_updates": 1499,
+  "pmglobal.sweeps": 314,
+  "pmglobal.ticks": 38747,
+  "pmglobal.updates": 3542,
   "pmglobal.ws_errors": 1,
-  "pmglobal.ws_msgs": 528625,
-  "pmglobal.ws_ticks": 7097,
-  "pmus.rest_updates": 10642,
-  "pmus.sweeps": 303,
-  "pmus.ticks": 2431696,
-  "pmus.updates": 10642,
+  "pmglobal.ws_msgs": 533040,
+  "pmglobal.ws_ticks": 7247,
+  "pmus.rest_updates": 10727,
+  "pmus.sweeps": 315,
+  "pmus.ticks": 2527684,
+  "pmus.updates": 10727,
   "pmus_x.last_count": 7999,
-  "pmus_x.sweeps": 304,
-  "prophetx.ws_errors": 202,
+  "pmus_x.sweeps": 316,
+  "prophetx.ws_errors": 210,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 302,
-  "supa_errors": 922
+  "pxboard.sweeps": 314,
+  "supa_errors": 958
  },
  "arbitrages": []
 }
