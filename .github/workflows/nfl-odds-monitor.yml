@@ -1,5 +1,26 @@
 name: NFL Odds Monitor
 
+# CADENCE: hourly. Operator decision 2026-08-25.
+#
+# TheOddsAPI bills each call as
+#     cost = [unique markets] x [regions] = h2h,spreads,totals (3) x us (1) = 3
+# and this pool is SHARED with the MLB suite.
+#
+#   cadence   MLB/day  NFL/day  total/day  per 31d  % of 4,500 (9 keys)
+#   hourly         72       72        144     4,464     99%   <- the target
+#   hourly         72      144        216     6,696    149%   (preseason empty)
+#
+# 4,464 of 4,500 fits ONLY with all nine keys live. API_7 is currently DEAD, so
+# the live pool is 8 x 500 = 4,000 and hourly runs at 112% of it.
+#
+# THIS IS SAFE TO RUN ANYWAY, because quota_gate.py is a hard gate, not advice:
+# it reads true per-key balances for free, reserves MLB's projected burn, and
+# EXIT 7 (skip) once the pool no longer projects to last until reset. So the
+# failure mode of running hourly on 8 keys is DEGRADED NFL CADENCE, never a
+# depleted pool or a 401 storm. Restoring API_7 removes the degradation.
+#
+# PENDING TASK: bring ODDS_API_KEY_7 back online. Until then expect the gate to
+# start skipping NFL cycles as the pool tightens toward the day-7 reset.
 on:
   schedule:
     - cron: "0 * * * *"
@@ -19,29 +40,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Env doctor (diagnose Supabase URL - no secret values printed)
-        run: |
-          python -c "
-          import os, socket
-          u = os.environ.get('SUPABASE_URL', '')
-          k = os.environ.get('SUPABASE_KEY', '')
-          print('SUPABASE_URL present:', bool(u.strip()), '| raw len:', len(u))
-          print('SUPABASE_KEY present:', bool(k.strip()), '| raw len:', len(k))
-          if u.strip():
-              host = u.split('//')[-1].split('/')[0].strip()
-              print('URL hostname:', repr(host))
-              try:
-                  socket.gethostbyname(host)
-                  print('DNS: RESOLVES OK')
-              except Exception as e:
-                  print('DNS: FAILS -', e)
-          else:
-              print('SUPABASE_URL is empty or whitespace only')
-          "
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-
       - name: Quota gate (sustain governor)
         id: gate
         continue-on-error: true
@@ -58,12 +56,12 @@ jobs:
           ODDS_API_KEY_9: ${{ secrets.ODDS_API_KEY_9 }}
           QUOTA_RESET_DAY: ${{ vars.QUOTA_RESET_DAY || '7' }}
           SAFETY_MARGIN: ${{ vars.SAFETY_MARGIN || '0.10' }}
+          # MLB stays hourly: 24 cycles x 3 credits = 72/day. The gate reserves
+          # this before deciding whether NFL can afford the current cycle.
           MLB_CREDITS_PER_DAY: ${{ vars.MLB_CREDITS_PER_DAY || '72' }}
           POLL_COST: ${{ vars.POLL_COST || '3' }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          ABET_STATE_REPO: ${{ vars.ABET_STATE_REPO || 'abetco/mlb-monitors-state' }}
 
       - name: Run odds monitor (single iteration)
         if: steps.gate.outcome == 'success'
@@ -83,9 +81,34 @@ jobs:
           DISCORD_WEBHOOK_NFL_TOTALS: ${{ secrets.DISCORD_WEBHOOK_NFL_TOTALS }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          # ---- DURABLE ODDS HISTORY (new) -------------------------------
+          # This runner's disk is destroyed when the job ends. Without these
+          # two values durable_state stays disabled, odds_nfl.db starts empty
+          # every run, and every chart is drawn from a single point in time -
+          # which is exactly the one-datapoint NFL chart bug.
+          #
+          # HF_TOKEN IS NOT YET A SECRET ON THIS REPO. It must be added, with
+          # write access to the dataset, or this change is inert.
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           ABET_STATE_REPO: ${{ vars.ABET_STATE_REPO || 'abetco/mlb-monitors-state' }}
+          ODDS_HISTORY_RETAIN_DAYS: ${{ vars.ODDS_HISTORY_RETAIN_DAYS || '7' }}
 
       - name: Skipped by quota gate
         if: steps.gate.outcome != 'success'
-        run: echo "Quota gate skipped this hour - pool budget reserved. Job OK."
+        run: echo "Quota gate skipped this cycle - pool budget reserved. Job OK."
+
+      # PUBLISH LOGGING (2026-10-14 1345 MDT): every run leaves a downloadable
+      # record of exactly what was published - the posted charts, the per-post
+      # receipts (post_receipts.jsonl), the per-run manifest (posted_manifest_*.json),
+      # every gate verdict (chart_quality_gate.jsonl) and the monitor log.
+      # Artifact link appears on the run page: Actions -> run -> Artifacts.
+      - name: Upload published charts + logs (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nfl-odds-published-${{ github.run_number }}_${{ github.run_id }}
+          path: |
+            data/runtime/nfl/charts/
+            data/logs/
+          retention-days: 14
+          if-no-files-found: warn

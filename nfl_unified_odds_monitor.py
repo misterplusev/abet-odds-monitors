@@ -7,7 +7,7 @@ Generates moneyline, spread, and totals movement charts with stored averages.
 Single API call for all three market types — saves credits.
 
 Features:
-  - Self-running continuous loop (every 4 hours)
+  - Self-running continuous loop (every 30 minutes)
   - Smart 9-key API rotation with credit tracking
   - Single API fetch for all markets (h2h, spreads, totals)
   - SQLite database with history tracking
@@ -20,7 +20,7 @@ Features:
   - Signal handling for graceful shutdown
 """
 
-SCRIPT_VERSION = "001"
+SCRIPT_VERSION = "004"  # 2026-10-16 2250 MDT - v003 + format heal (strftime + T-replace) + stale-connection retry + output guards (OUTPUT GUARD / CHART DELIVERY SHORTFALL) + chart_quality_gate extension to assert charts_rendered>0. Mirrors MLB v009. Tested: real render from mixed-format DB + guard-path tests.
 SCRIPT_NAME = "NFL Unified Odds Monitor"
 
 import json
@@ -28,6 +28,7 @@ import os
 import random
 import re
 import signal
+import socket
 import sqlite3
 import sys
 import time
@@ -76,6 +77,127 @@ for _d in [DB_PATH.parent, RAW_DIR, RUNTIME_DIR, CHARTS_DIR, LOG_DIR]:
     _d.mkdir(parents=True, exist_ok=True)
 
 # ==========================================================================
+# POST SIGNATURE — module/venue provenance on every Discord post
+# ==========================================================================
+# WHY THIS EXISTS. Four venues run this same script against the same Discord
+# webhooks (GitHub Actions, HF Space, a cron host, local dev). Discord shows
+# the WEBHOOK's display name, not the runner — so a post from any venue looks
+# identical, and on 2026-10-12 a live post could not be attributed to a host.
+# Every post now carries: visible author name + footer SIGNATURE, a zero-width
+# covert fingerprint (ZWSP=0 / ZWJ=1 between ZWNJ sentinels) appended to the
+# footer/content, and a local JSONL receipt row.
+#
+# SOURCE_ID is REQUIRED on every deployment (e.g. gh-actions, hf-space,
+# vm-cron, local-dev). Missing -> "unknown" (loudly printed at startup).
+SOURCE_ID = os.environ.get("SOURCE_ID", "").strip() or "unknown"
+SOURCE_HOST = socket.gethostname()
+
+
+def _git_sha7() -> str:
+    """Short HEAD sha when running from a checkout; 'nogit' otherwise."""
+    try:
+        import subprocess
+        r = subprocess.run(["git", "rev-parse", "--short=7", "HEAD"],
+                           cwd=str(Path(__file__).resolve().parent),
+                           capture_output=True, text=True, timeout=5)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+    except Exception:
+        pass
+    return "nogit"
+
+
+SOURCE_SHA = os.environ.get("SOURCE_SHA", "").strip() or _git_sha7()
+SIGNATURE = f"{SOURCE_ID}@{SOURCE_HOST}#{SOURCE_SHA}"
+
+_ZWNJ = "\u200c"
+_ZWSP = "\u200b"
+_ZWJ = "\u200d"
+
+
+def covert_signature(venue: str) -> str:
+    """Invisible venue fingerprint: ZWSP/ZWJ bits between ZWNJ sentinels."""
+    bits = "".join(f"{b:08b}" for b in venue.encode("utf-8"))
+    return _ZWNJ + "".join(_ZWSP if b == "0" else _ZWJ for b in bits) + _ZWNJ
+
+
+def decode_covert_signature(text: str) -> str:
+    """Recover the venue string from a covert_signature() marker."""
+    bits = "".join("0" if ch == _ZWSP else "1" for ch in text
+                   if ch in (_ZWSP, _ZWJ))
+    try:
+        return bytes(int(bits[i:i + 8], 2)
+                     for i in range(0, len(bits) - len(bits) % 8, 8)
+                     ).decode("utf-8")
+    except Exception:
+        return ""
+
+
+def signed_footer() -> str:
+    """Visible signature + covert fingerprint for embed footers."""
+    return f"{SCRIPT_NAME} [{SIGNATURE}]" + covert_signature(SIGNATURE)
+
+
+def signed_author() -> str:
+    """Visible Discord author (webhook username override)."""
+    return f"{SCRIPT_NAME} [{SOURCE_ID}]"
+
+
+def _post_receipt(kind: str, channel: str, detail: str = ""):
+    """Append a JSONL receipt row for every successful post. Never raises."""
+    try:
+        p = Path(os.environ.get("POST_RECEIPT_LOG")
+                 or (LOG_DIR / "post_receipts.jsonl"))
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with open(p, "a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "venue": SOURCE_ID, "host": SOURCE_HOST, "sha": SOURCE_SHA,
+                "kind": kind, "channel": channel, "detail": detail,
+            }) + "\n")
+    except Exception:
+        pass
+
+
+def _append_gate_log(gate):
+    """Append every gate verdict (PASS/FAIL/SKIPPED) to data/logs/chart_quality_gate.jsonl."""
+    try:
+        row = {"ts_utc": datetime.now(timezone.utc).isoformat(),
+               "venue": SOURCE_ID, "sha": SOURCE_SHA}
+        row.update(gate if isinstance(gate, dict) else {"verdict": "SKIPPED"})
+        p = LOG_DIR / "chart_quality_gate.jsonl"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with open(p, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, default=str) + "\n")
+    except Exception:
+        pass
+
+
+def _write_posted_manifest(ml, sp, to, games_n, records_n, elapsed_s, gate):
+    """Per-run JSON manifest of exactly what this run published. Never raises."""
+    try:
+        man = {
+            "ts_utc": datetime.now(timezone.utc).isoformat(),
+            "source": SIGNATURE, "script_version": SCRIPT_VERSION,
+            "games": games_n, "records": records_n,
+            "elapsed_seconds": round(float(elapsed_s), 1),
+            "gate": gate if isinstance(gate, dict) else {"verdict": "SKIPPED"},
+            "charts": {
+                "moneyline": [p.name for p, _ in ml],
+                "spreads": [p.name for p, _ in sp],
+                "totals": [p.name for p, _ in to],
+            },
+            "total_charts": len(ml) + len(sp) + len(to),
+        }
+        p = LOG_DIR / ("posted_manifest_"
+                       + datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S") + ".json")
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(man, indent=2), encoding="utf-8")
+        print(f"[manifest] wrote {p.name} ({man['total_charts']} charts)", flush=True)
+    except Exception as e:
+        print(f"[manifest] write failed: {e}", flush=True)
+
+# ==========================================================================
 # DURABLE ODDS HISTORY
 # ==========================================================================
 # WHY THIS EXISTS. odds_nfl.db is written to the GitHub Actions runner's disk,
@@ -107,6 +229,35 @@ except Exception as _e:                                    # pragma: no cover
 HISTORY_SNAPSHOT = "nfl_odds_history_snapshot.json.gz"
 HISTORY_RETAIN_DAYS = int(os.getenv("ODDS_HISTORY_RETAIN_DAYS", "7"))
 
+# -- CHART QUALITY GATE (v1.0.0, 2026-10-14 0111 MDT) ------------------------
+# Never post "movement" charts that cannot show movement. Proven in
+# NFL_ODDS_FIX_PROOF_20261013_1455: live lane fails R1 (no history),
+# created_at-collapse fails R2 (history stacked on one x-position),
+# created_at-preserving build passes. A missing/broken gate never blocks.
+CHART_GATE_FILE = "chart_quality_gate_v1.0.0_20261014_0111.py"
+
+
+def _chart_gate_evaluate(db_path, charts_rendered=None):
+    try:
+        import importlib.util
+        p = Path(__file__).with_name(CHART_GATE_FILE)
+        if not p.exists():
+            print(f"[gate] {CHART_GATE_FILE} not found - gate skipped", flush=True)
+            return None
+        spec = importlib.util.spec_from_file_location("chart_quality_gate", p)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        return m.evaluate(str(db_path), charts_rendered=charts_rendered)
+    except Exception as e:
+        print(f"[gate] evaluation failed, not blocking: {e}", flush=True)
+        return None
+
+
+def _norm_ct(v):
+    """v004: normalize any timestamp-ish value to 'YYYY-MM-DD HH:MM:SS' (UTC)."""
+    s = str(v).strip().replace("T", " ")
+    return s[:19]
+
 # File logger — writes to data/logs/ so the launcher dashboard picks it up
 import logging as _logging
 _file_logger = _logging.getLogger("nfl_odds_monitor")
@@ -134,6 +285,22 @@ for _i in range(1, 10):
 # Sport keys to try (in order of priority)
 # Preseason runs Aug-Sep (HOF game + 4 weeks); books carry both sets of lines
 # while preseason is underway, so try preseason key first, then regular season.
+#
+# CALENDAR TRIGGERS SILENTLY DOUBLE THE BILL. fetch_odds() returns on the FIRST
+# sport key that yields data, so two keys cost 3 credits while the first still
+# has games — and 6 the moment it goes empty. Preseason ends in late August but
+# `_MONTH in (8, 9)` kept asking for it all through September: an empty 3-credit
+# call, then 3 more for the real key. That flips NFL from 2,160 to 4,320
+# credits/month with no code change and no alert, and takes the shared 9-key
+# pool from 96% to 144% of its 4,500 allowance.
+#
+# PRESEASON STAYS IN. It is currently returning real games (17 on 2026-08-25),
+# and dropping it would lose live coverage — so unlike MLB, the default here is
+# ON. The doubling it can cause is affordable at the 2-hourly cadence: the
+# worst case (preseason empty, so 2 calls x 3 credits x 12 cycles = 72/day for
+# NFL, plus MLB's 36) is 3,348 per 31 days = 84% of the 4,000-credit live pool.
+# The switch exists so it can be turned OFF deliberately once preseason ends,
+# rather than a calendar silently changing the bill.
 _MONTH = datetime.now().month
 if _MONTH in (8, 9) and os.getenv("ODDS_INCLUDE_NFL_PRESEASON", "1") == "1":
     SPORT_KEYS = ["americanfootball_nfl_preseason", "americanfootball_nfl"]
@@ -149,8 +316,21 @@ VERBOSE_LOGGING = True
 SEND_DISCORD = True
 GENERATE_CHARTS = True
 
-# Continuous running
-RUN_INTERVAL = 14400  # 4 hours
+# Continuous running.
+#
+# CREDIT-AWARE CADENCE. TheOddsAPI bills per call as:
+#     cost = [unique markets returned] x [regions specified]
+# Our call is markets=h2h,spreads,totals (3) x regions=us (1) = 3 credits.
+# ODDS_API_KEY_1..9 x 500 = 4,500 credits/month, and this pool is SHARED with
+# the MLB suite, which spends 2,160/month at its own hourly cadence.
+#
+#     1800s (30m) -> 48 cycles/day -> 144 credits/day -> 4,320/mo   <- was
+#     3600s (60m) -> 24 cycles/day ->  72 credits/day -> 2,160/mo   <- now
+#
+# At 30 minutes, NFL alone took 96% of the shared pool and MLB's 2,160 put the
+# pair at 144% — over budget every month. Both hourly is 4,320/mo, inside 4,500.
+# Overridable from the Space settings without a redeploy, like the MLB monitor.
+RUN_INTERVAL = int(os.getenv("ODDS_RUN_INTERVAL_SEC", "3600"))
 
 # Team abbreviations (all 32 NFL teams)
 TEAM_ABBR = {
@@ -553,23 +733,26 @@ def send_discord_alert(message: str, is_error: bool = False):
     color = 0xFF0000 if is_error else 0x00FF00
     title = f"{'⚠️' if is_error else '🏈'} NFL Odds Monitor v{SCRIPT_VERSION}"
     payload = {
+        "username": signed_author(),
         "embeds": [{
             "title": title,
             "description": message,
             "color": color,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "footer": {"text": "NFL Unified Odds Monitor"}
+            "footer": {"text": signed_footer()}
         }]
     }
     try:
         resp = _session.post(DISCORD_WEBHOOK_MONEYLINE, json=payload, timeout=10)
         if resp.status_code in (200, 204):
+            _post_receipt("alert" if is_error else "text_embed",
+                          "#nfl-moneylines", title)
             try:
                 from discord_post_logger import log_post
                 log_post("nfl_odds_monitor", "#nfl-moneylines",
                          "alert" if is_error else "text_embed",
                          title=title, description=message, color=color,
-                         footer="NFL Unified Odds Monitor")
+                         footer=signed_footer())
             except Exception:
                 pass
     except Exception:
@@ -606,23 +789,47 @@ def post_chart_to_discord(chart_path: Path, title: str, webhook_url: str,
 
                 content_text = (
                     f"**{SYM['chart']} {away} @ {home}** — {game_time}\n"
-                    f"*{title}* • Updated {time_str}"
+                    f"*{title}* • Updated {time_str} • `{SIGNATURE}`"
                 )
             else:
-                content_text = f"**{SYM['chart']} {title}**\n`{time_str}`"
+                content_text = (f"**{SYM['chart']} {title}**\n"
+                                f"`{time_str}` • `{SIGNATURE}`")
 
-            data = {"content": content_text}
-            resp = _session.post(webhook_url, files=files, data=data, timeout=15)
-            if resp.status_code in (200, 204):
+            data = {"content": content_text + covert_signature(SIGNATURE),
+                    "username": signed_author()}
+            # STALE-CONNECTION RETRY (ported from MLB v009, 2026-10-15 1320 MDT).
+            # Proven in production Space logs: after ~60 min idle the pooled
+            # keep-alive connection dies; the FIRST post of every cycle fails
+            # with ConnectionResetError(104) and the chart was silently lost.
+            # Retry once on a fresh connection so the first chart survives.
+            resp = None
+            for _attempt in (1, 2):
+                try:
+                    if _attempt > 1:
+                        try:
+                            f.seek(0)
+                            _session.close()
+                        except Exception:
+                            pass
+                        time.sleep(2)
+                    resp = _session.post(webhook_url, files=files, data=data, timeout=20)
+                    if resp.status_code in (200, 204):
+                        break
+                except OSError as _ce:      # ConnectionResetError / requests.ConnectionError
+                    if _attempt == 2:
+                        raise
+                    log_warn(f"Discord post retry for {chart_path.name}: {_ce}")
+            if resp is not None and resp.status_code in (200, 204):
                 log_ok(f"Posted: {chart_path.name}")
+                # Determine channel from webhook URL
+                channel = "#nfl-moneylines"
+                if webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_SPREADS", ""):
+                    channel = "#nfl-spreads"
+                elif webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_TOTALS", ""):
+                    channel = "#nfl-totals"
+                _post_receipt("chart", channel, chart_path.name)
                 try:
                     from discord_post_logger import log_post, save_image
-                    # Determine channel from webhook URL
-                    channel = "#nfl-moneylines"
-                    if webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_SPREADS", ""):
-                        channel = "#nfl-spreads"
-                    elif webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_TOTALS", ""):
-                        channel = "#nfl-totals"
                     img_url = save_image("odds", str(chart_path), chart_path.stem)
                     log_post("nfl_odds_monitor", channel, "chart",
                              title=title, content=content_text,
@@ -993,7 +1200,7 @@ def _format_x_axis(ax, book_df):
         return
     eastern = pytz.timezone('US/Eastern')
     # Convert to datetime — book_df from SQL has raw strings
-    ts = pd.to_datetime(book_df['created_at'], utc=True).dt.tz_convert(eastern)
+    ts = pd.to_datetime(book_df['created_at'].astype(str).str.replace('T', ' ', regex=False).str.slice(0, 19), utc=True).dt.tz_convert(eastern)
 
     # Get unique fetch timestamps (rounded to the minute to collapse sub-second jitter)
     unique_ts = ts.dt.floor('min').drop_duplicates().sort_values()
@@ -1034,7 +1241,7 @@ def _plot_book_lines(ax, book_df, avg_df):
     # Average line
     if not avg_df.empty:
         avg_df = avg_df.copy()
-        avg_df['created_at'] = pd.to_datetime(avg_df['created_at'], utc=True).dt.tz_convert(eastern)
+        avg_df['created_at'] = pd.to_datetime(avg_df['created_at'].astype(str).str.replace('T', ' ', regex=False).str.slice(0, 19), utc=True).dt.tz_convert(eastern)
         avg_df['price_decimal'] = avg_df['price_american'].apply(american_to_decimal)
 
         match = re.search(r'\((\d+) books?\)', str(avg_df['bookmaker_title'].iloc[0]))
@@ -1056,7 +1263,7 @@ def _plot_book_lines(ax, book_df, avg_df):
     # Individual bookmakers
     if not book_df.empty:
         book_df = book_df.copy()
-        book_df['created_at'] = pd.to_datetime(book_df['created_at'], utc=True).dt.tz_convert(eastern)
+        book_df['created_at'] = pd.to_datetime(book_df['created_at'].astype(str).str.replace('T', ' ', regex=False).str.slice(0, 19), utc=True).dt.tz_convert(eastern)
         book_df['price_decimal'] = book_df['price_american'].apply(american_to_decimal)
 
         for bk in book_df['bookmaker_key'].unique():
@@ -1184,8 +1391,8 @@ def _add_logo_title(fig, away_team: str, home_team: str, title_text: str, game_t
     try:
         from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
-        away_logo = _get_team_logo_for_chart(away_team, size=48)
-        home_logo = _get_team_logo_for_chart(home_team, size=48)
+        away_logo = _get_team_logo_for_chart(away_team, size=36)
+        home_logo = _get_team_logo_for_chart(home_team, size=36)
 
         if away_logo is None and home_logo is None:
             fig.suptitle(title_text, fontsize=14, color='white', fontweight='bold')
@@ -1202,16 +1409,16 @@ def _add_logo_title(fig, away_team: str, home_team: str, title_text: str, game_t
         ax_title.text(0.5, 0.5,
                       f"  {away_abbr}  @  {home_abbr}  — {game_time}  ",
                       transform=ax_title.transAxes,
-                      fontsize=16, color='white', fontweight='bold',
+                      fontsize=14, color='white', fontweight='bold',
                       ha='center', va='center')
 
         if away_logo is not None:
             ax_title.add_artist(AnnotationBbox(
-                OffsetImage(away_logo, zoom=1.1), (0.32, 0.5),
+                OffsetImage(away_logo, zoom=0.8), (0.32, 0.5),
                 frameon=False, xycoords='axes fraction'))
         if home_logo is not None:
             ax_title.add_artist(AnnotationBbox(
-                OffsetImage(home_logo, zoom=1.1), (0.68, 0.5),
+                OffsetImage(home_logo, zoom=0.8), (0.68, 0.5),
                 frameon=False, xycoords='axes fraction'))
     except Exception as e:
         # Any failure falls back to the plain title rather than losing the chart.
@@ -1248,14 +1455,14 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
             for ax, team in zip([ax1, ax2], [row['away_team'], row['home_team']]):
                 _setup_axes(ax)
                 bdf = pd.read_sql_query(
-                    "SELECT created_at, bookmaker_key, bookmaker_title, price_american "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND market_key='h2h' "
-                    "AND bookmaker_key!='_average' ORDER BY created_at",
+                    "AND bookmaker_key!='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team))
                 adf = pd.read_sql_query(
-                    "SELECT created_at, price_american, bookmaker_title "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, bookmaker_title "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND market_key='h2h' "
-                    "AND bookmaker_key='_average' ORDER BY created_at",
+                    "AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team))
                 _plot_book_lines(ax, bdf, adf)
                 _add_odds_header(ax, bdf, adf)
@@ -1278,7 +1485,7 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
             ax2.set_xlabel('Time', fontsize=10, color='#CCCCCC')
             for lbl in ax2.xaxis.get_ticklabels():
                 lbl.set_rotation(45); lbl.set_ha('right'); lbl.set_color('#CCCCCC')
-            plt.tight_layout(rect=[0, 0, 1, 0.88])
+            plt.tight_layout()
 
             path = CHARTS_DIR / f"{gid[:8]}_ml_{datetime.now().strftime('%H%M%S')}.png"
             plt.savefig(path, dpi=130, facecolor='#0F1419', bbox_inches='tight')
@@ -1289,9 +1496,7 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
                 'commence_time': row['commence_time'],
             }
             charts.append((path, game_info))
-            n_ts = bdf['created_at'].nunique() if not bdf.empty else 0
-            log_ok(f"ML: {row['away_team']} @ {row['home_team']} "
-                   f"({len(bdf)} rows, {n_ts} distinct ts)")
+            log_ok(f"ML: {row['away_team']} @ {row['home_team']}")
 
         conn.close()
     except Exception as e:
@@ -1334,14 +1539,14 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
                                          [row['home_spread'], row['away_spread']]):
                 _setup_axes(ax)
                 bdf = pd.read_sql_query(
-                    "SELECT created_at, bookmaker_key, bookmaker_title, price_american "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
-                    "AND market_key='spreads' AND bookmaker_key!='_average' ORDER BY created_at",
+                    "AND market_key='spreads' AND bookmaker_key!='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team, spread))
                 adf = pd.read_sql_query(
-                    "SELECT created_at, price_american, bookmaker_title "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, bookmaker_title "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
-                    "AND market_key='spreads' AND bookmaker_key='_average' ORDER BY created_at",
+                    "AND market_key='spreads' AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team, spread))
                 _plot_book_lines(ax, bdf, adf)
                 sp_txt = f"+{spread}" if spread > 0 else str(spread)
@@ -1366,7 +1571,7 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
             ax2.set_xlabel('Time', fontsize=10, color='#CCCCCC')
             for lbl in ax2.xaxis.get_ticklabels():
                 lbl.set_rotation(45); lbl.set_ha('right'); lbl.set_color('#CCCCCC')
-            plt.tight_layout(rect=[0, 0, 1, 0.88])
+            plt.tight_layout()
 
             hs_s = str(hs).replace('.', '_').replace('-', 'neg')
             path = CHARTS_DIR / f"{gid[:8]}_sp_{hs_s}_{datetime.now().strftime('%H%M%S')}.png"
@@ -1378,9 +1583,7 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
                 'commence_time': row['commence_time'],
             }
             charts.append((path, game_info))
-            n_ts = bdf['created_at'].nunique() if not bdf.empty else 0
-            log_ok(f"SP: {row['away_team']} @ {row['home_team']} {label} "
-                   f"({len(bdf)} rows, {n_ts} distinct ts)")
+            log_ok(f"SP: {row['away_team']} @ {row['home_team']} {label}")
 
         conn.close()
     except Exception as e:
@@ -1418,14 +1621,14 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
             for ax, outcome in zip([ax1, ax2], ['Over', 'Under']):
                 _setup_axes(ax)
                 bdf = pd.read_sql_query(
-                    "SELECT created_at, bookmaker_key, bookmaker_title, price_american "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
-                    "AND market_key='totals' AND bookmaker_key!='_average' ORDER BY created_at",
+                    "AND market_key='totals' AND bookmaker_key!='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, outcome, total))
                 adf = pd.read_sql_query(
-                    "SELECT created_at, price_american, bookmaker_title "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, bookmaker_title "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
-                    "AND market_key='totals' AND bookmaker_key='_average' ORDER BY created_at",
+                    "AND market_key='totals' AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, outcome, total))
                 _plot_book_lines(ax, bdf, adf)
                 _add_odds_header(ax, bdf, adf, prefix=f"TOTAL: {total}")
@@ -1447,7 +1650,7 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
             ax2.set_xlabel('Time', fontsize=10, color='#CCCCCC')
             for lbl in ax2.xaxis.get_ticklabels():
                 lbl.set_rotation(45); lbl.set_ha('right'); lbl.set_color('#CCCCCC')
-            plt.tight_layout(rect=[0, 0, 1, 0.88])
+            plt.tight_layout()
 
             ts = str(total).replace('.', '_')
             path = CHARTS_DIR / f"{gid[:8]}_tot_{ts}_{datetime.now().strftime('%H%M%S')}.png"
@@ -1459,9 +1662,7 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
                 'commence_time': row['commence_time'],
             }
             charts.append((path, game_info))
-            n_ts = bdf['created_at'].nunique() if not bdf.empty else 0
-            log_ok(f"TO: {row['away_team']} @ {row['home_team']} O/U {total} "
-                   f"({len(bdf)} rows, {n_ts} distinct ts)")
+            log_ok(f"TO: {row['away_team']} @ {row['home_team']} O/U {total}")
 
         conn.close()
     except Exception as e:
@@ -1473,6 +1674,52 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
 # ==========================================================================
 # MAIN ITERATION
 # ==========================================================================
+
+def snapshot_odds_history() -> bool:
+    """Push games + recent odds_history to the shared HF Dataset. Never raises.
+
+    Ported from mlb_unified_odds_monitor.snapshot_odds_history(); the only
+    differences are the NFL-labelled HISTORY_SNAPSHOT key and a longer default
+    retention, because NFL polls far less often than MLB and so needs a wider
+    window to hold the same number of points per game.
+    """
+    if not _HAS_DURABLE or not durable_state.enabled():
+        return False
+    conn = None
+    try:
+        cutoff = (datetime.now(timezone.utc)
+                  - timedelta(days=HISTORY_RETAIN_DAYS)).isoformat()
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        games = c.execute(
+            "SELECT game_id, sport_key, commence_time, home_team, away_team, "
+            "last_update FROM games").fetchall()
+        hist = c.execute(
+            "SELECT game_id, fetch_timestamp, bookmaker_key, bookmaker_title, "
+            "market_key, outcome_name, price_decimal, price_american, point, "
+            "is_live_game, created_at FROM odds_history WHERE fetch_timestamp >= ?",
+            (cutoff,)).fetchall()
+        ok = durable_state.save_gz_json(HISTORY_SNAPSHOT, {
+            "saved_at": datetime.now(timezone.utc).isoformat(),
+            "sport": "nfl",
+            "retain_days": HISTORY_RETAIN_DAYS,
+            "games": games,
+            "odds_history": hist,
+        })
+        if ok:
+            log_info(f"NFL odds history snapshot: {len(games)} games, "
+                     f"{len(hist)} history rows -> {HISTORY_SNAPSHOT}")
+        return ok
+    except Exception as e:
+        log_warn(f"NFL odds history snapshot failed: {e}")
+        return False
+    finally:
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
 
 def restore_from_supabase() -> int:
     """Replay nfl_odds_history out of Supabase into the local SQLite. Never raises.
@@ -1507,36 +1754,11 @@ def restore_from_supabase() -> int:
             return a / 100.0 + 1.0 if a > 0 else 100.0 / abs(a) + 1.0
 
         payload = []
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        seen = set(c.execute(
-            "SELECT game_id, fetch_timestamp, bookmaker_key, market_key, "
-            "outcome_name, point FROM odds_history").fetchall())
         for r in rows:
             am = r.get("price")
-            row_key = (r.get("game_id"),
-                       r.get("fetched_at"),
-                       r.get("bookmaker"),
-                       r.get("market"),
-                       r.get("outcome"),
-                       r.get("point"))
-            if row_key in seen:
-                continue
-            seen.add(row_key)
-            ca = r.get("fetched_at")
-            if ca:
-                try:
-                    # Normalize to SQLite CURRENT_TIMESTAMP format ("YYYY-MM-DD
-                    # HH:MM:SS") so the created_at column holds ONE consistent
-                    # format — pd.to_datetime infers a single format from the
-                    # first element and raises on a mix of ISO8601 + space form.
-                    ca = datetime.fromisoformat(
-                        str(ca).replace("Z", "+00:00")).strftime("%Y-%m-%d %H:%M:%S")
-                except (ValueError, TypeError):
-                    pass
             payload.append((
                 r.get("game_id"),
-                r.get("fetched_at"),          # table column (server default now())
+                r.get("fetched_at_pt") or r.get("created_at"),
                 r.get("bookmaker"),
                 r.get("bookmaker"),          # no title column upstream
                 r.get("market"),
@@ -1545,12 +1767,10 @@ def restore_from_supabase() -> int:
                 am,
                 r.get("point"),
                 0,
-                ca,                           # created_at: the row's REAL fetch time.
-                                              # Without this, DEFAULT CURRENT_TIMESTAMP
-                                              # stamps ALL restored rows with the restore
-                                              # instant, collapsing hours of history into
-                                              # one x position on the created_at chart axis.
+                _norm_ct(r.get("fetched_at_pt") or r.get("created_at")),  # v004: uniform format
             ))
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
         c.executemany(
             "INSERT OR IGNORE INTO odds_history (game_id, fetch_timestamp, "
             "bookmaker_key, bookmaker_title, market_key, outcome_name, "
@@ -1596,12 +1816,18 @@ def restore_odds_history() -> int:
             "INSERT OR IGNORE INTO games (game_id, sport_key, commence_time, "
             "home_team, away_team, last_update) VALUES (?,?,?,?,?,?)",
             snap.get("games", []))
+        _rows = []
+        for _r in snap.get("odds_history", []):
+            _r = tuple(_r)
+            # v004: created_at := the row's OWN fetch time (normalized). Heals any
+            # historical collapse and guarantees ONE uniform format.
+            _rows.append(_r[:10] + (_norm_ct(_r[1]),))
         c.executemany(
             "INSERT OR IGNORE INTO odds_history (game_id, fetch_timestamp, "
             "bookmaker_key, bookmaker_title, market_key, outcome_name, "
-            "price_decimal, price_american, point, is_live_game) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?)",
-            snap.get("odds_history", []))
+            "price_decimal, price_american, point, is_live_game, created_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            _rows)
         conn.commit()
         n = c.execute("SELECT COUNT(*) FROM odds_history").fetchone()[0]
         log_info(f"Restored NFL odds history: "
@@ -1618,56 +1844,23 @@ def restore_odds_history() -> int:
                 pass
 
 
-def snapshot_odds_history() -> int:
-    """Persist games + odds_history to the snapshot. Never raises.
-
-    The write-side twin of restore_odds_history. Rows are stored as plain
-    sequences (sqlite fetchall tuples, serialized as JSON arrays) because the
-    restore path replays them straight into executemany — dicts would break
-    that round-trip. Called once at the END of every --once cycle so history
-    accumulates across CI runs, mirroring the restore-at-start/snapshot-at-end
-    contract in the comment block above.
-    """
-    if not _HAS_DURABLE or not durable_state.enabled():
-        return 0
-    conn = None
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        games = c.execute(
-            "SELECT game_id, sport_key, commence_time, "
-            "home_team, away_team, last_update FROM games").fetchall()
-        odds = c.execute(
-            "SELECT game_id, fetch_timestamp, bookmaker_key, bookmaker_title, "
-            "market_key, outcome_name, price_decimal, price_american, point, "
-            "is_live_game FROM odds_history").fetchall()
-        snap = {"games": games, "odds_history": odds}
-        ok = durable_state.save_gz_json(HISTORY_SNAPSHOT, snap)
-        log_info(f"Snapshotted NFL odds history: "
-                 f"{len(snap['odds_history'])} rows (pushed={ok})")
-        return len(snap["odds_history"])
-    except Exception as e:
-        log_warn(f"NFL odds history snapshot failed: {e}")
-        return 0
-    finally:
-        if conn is not None:
-            try:
-                conn.close()
-            except Exception:
-                pass
-
-
 def run_iteration() -> int:
-    """Run one complete fetch→store→chart→post cycle."""
+    """Run one complete restore→fetch→store→chart→post→snapshot cycle."""
     try:
         if not setup_database():
             return 1
 
+        # The runner is empty. Replay what previous runs collected BEFORE any
+        # chart is drawn, or every chart shows exactly one point.
+        # Supabase first — its credentials already exist on this repo. The HF
+        # Dataset snapshot is additive and only fires if HF_TOKEN is present;
+        # both use INSERT OR IGNORE so running both cannot double-count.
         restored = restore_from_supabase()
         restored += restore_odds_history()
         if not restored:
-            log_warn("No prior odds history restored - charts this run will "
-                     "show only points collected in this cycle.")
+            log_warn("No prior odds history restored — charts this run will show "
+                     "only the points collected in this cycle. Check SUPABASE_KEY "
+                     "and HF_TOKEN are set on the repo.")
 
         api_mgr = APIKeyManager()
         t0 = time.time()
@@ -1683,19 +1876,43 @@ def run_iteration() -> int:
 
         # Movement charts (works with 1+ data points — single points render as dots)
         ml_charts = sp_charts = to_charts = []
+        _gate = None
+        _posted = 0
         if GENERATE_CHARTS and records > 0:
             ml_charts = generate_moneyline_charts()
             sp_charts = generate_spread_charts()
             to_charts = generate_totals_charts()
 
+            # ---- CHART QUALITY GATE (2026-10-14 0111 MDT) ------------------
+            # Suppress posts when the charts cannot show movement (single
+            # snapshot / collapsed x-axis). Snapshot + run still complete.
+            _gate = _chart_gate_evaluate(DB_PATH, charts_rendered=
+                                         len(ml_charts) + len(sp_charts) + len(to_charts))
+            _append_gate_log(_gate)
+            if _gate and _gate.get("verdict") == "FAIL":
+                _n_suppressed = len(ml_charts) + len(sp_charts) + len(to_charts)
+                log_warn(f"CHART QUALITY GATE FAIL: {'; '.join(_gate.get('reasons', []))} "
+                         f"(series={_gate.get('series')} max_x={_gate.get('max_cx')} "
+                         f"max_ts={_gate.get('max_ftx')}) - suppressing {_n_suppressed} chart posts")
+                if SEND_DISCORD:
+                    send_discord_alert(
+                        f"CHART QUALITY GATE FAILED - {_n_suppressed} chart posts suppressed\n"
+                        f"{'; '.join(_gate.get('reasons', []))}\n"
+                        f"series={_gate.get('series')} max_x={_gate.get('max_cx')} "
+                        f"max_ts={_gate.get('max_ftx')}")
+                ml_charts = sp_charts = to_charts = []
+
             for ch_path, gi in ml_charts:
-                post_chart_to_discord(ch_path, "NFL Moneyline Movement", DISCORD_WEBHOOK_MONEYLINE, game_info=gi)
+                if post_chart_to_discord(ch_path, "NFL Moneyline Movement", DISCORD_WEBHOOK_MONEYLINE, game_info=gi):
+                    _posted += 1
                 time.sleep(0.8)
             for ch_path, gi in sp_charts:
-                post_chart_to_discord(ch_path, "NFL Spread Movement", DISCORD_WEBHOOK_SPREADS, game_info=gi)
+                if post_chart_to_discord(ch_path, "NFL Spread Movement", DISCORD_WEBHOOK_SPREADS, game_info=gi):
+                    _posted += 1
                 time.sleep(0.8)
             for ch_path, gi in to_charts:
-                post_chart_to_discord(ch_path, "NFL Totals Movement", DISCORD_WEBHOOK_TOTALS, game_info=gi)
+                if post_chart_to_discord(ch_path, "NFL Totals Movement", DISCORD_WEBHOOK_TOTALS, game_info=gi):
+                    _posted += 1
                 time.sleep(0.8)
 
         # Push API key state to Supabase (persistent across restarts + dashboard)
@@ -1703,6 +1920,20 @@ def run_iteration() -> int:
 
         elapsed = time.time() - t0
         total_charts = len(ml_charts) + len(sp_charts) + len(to_charts)
+
+        # ---- OUTPUT GUARD (v004, 2026-10-16): silence is how these failures
+        # survived weeks. Shout when render or delivery fails. ----
+        if records > 0 and GENERATE_CHARTS:
+            if total_charts == 0:
+                log_error(f"OUTPUT GUARD: 0 charts rendered from {records} records "
+                          f"(chart generation failed silently?)", critical=True)
+            elif _posted < total_charts:
+                log_warn(f"OUTPUT GUARD: {_posted}/{total_charts} charts posted "
+                         f"({total_charts - _posted} lost after retries)")
+                if SEND_DISCORD:
+                    send_discord_alert(
+                        f"⚠ CHART DELIVERY SHORTFALL: {_posted}/{total_charts} charts "
+                        f"posted this cycle - {total_charts - _posted} lost")
         log_ok(f"Iteration complete: {len(data)} games, {records} records, "
                f"{total_charts} charts in {elapsed:.1f}s")
 
@@ -1730,8 +1961,17 @@ def run_iteration() -> int:
                 f"✅ **Odds Update Complete**\n"
                 f"**{len(data)} Games** | {records} records | {elapsed:.1f}s\n"
                 f"Charts: ML={len(ml_charts)} SP={len(sp_charts)} TO={len(to_charts)}\n"
-                f"Credits remaining: {credits}\n\n"
+                f"Credits remaining: {credits}\n"
+                f"Source: {SIGNATURE}\n\n"
                 f"{matchup_text}")
+
+        # PUBLISHED MANIFEST (2026-10-14 1345 MDT): per-run JSON of what was
+        # posted + gate verdict; uploaded with the charts as a workflow artifact.
+        _write_posted_manifest(ml_charts, sp_charts, to_charts,
+                               len(data), records, elapsed, _gate)
+
+        # LAST ACT OF THE RUN. The runner is about to be destroyed; everything
+        # this cycle collected exists only in a file that is about to vanish.
         snapshot_odds_history()
         return 0
 
@@ -1763,6 +2003,9 @@ def main():
     print(f"{Colors.BOLD}  {SCRIPT_NAME} v{SCRIPT_VERSION}{Colors.RESET}")
     print(f"{Colors.CYAN}  Sport keys: {sport_str} | Interval: {RUN_INTERVAL//60}min{Colors.RESET}")
     print(f"{Colors.CYAN}  Markets: {MARKETS} | Keys: {len(API_KEYS)}{Colors.RESET}")
+    print(f"{Colors.CYAN}  Source: {SIGNATURE}{Colors.RESET}")
+    if SOURCE_ID == "unknown":
+        print("  [WARN] SOURCE_ID env not set — posts will be signed 'unknown'")
     print(f"{Colors.CYAN}{'='*60}{Colors.RESET}\n")
 
     if SEND_DISCORD:
