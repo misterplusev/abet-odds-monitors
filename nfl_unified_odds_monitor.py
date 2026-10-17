@@ -1878,10 +1878,12 @@ def run_iteration() -> int:
         ml_charts = sp_charts = to_charts = []
         _gate = None
         _posted = 0
+        _rendered = 0
         if GENERATE_CHARTS and records > 0:
             ml_charts = generate_moneyline_charts()
             sp_charts = generate_spread_charts()
             to_charts = generate_totals_charts()
+            _rendered = len(ml_charts) + len(sp_charts) + len(to_charts)
 
             # ---- CHART QUALITY GATE (2026-10-14 0111 MDT) ------------------
             # Suppress posts when the charts cannot show movement (single
@@ -1924,7 +1926,7 @@ def run_iteration() -> int:
         # ---- OUTPUT GUARD (v004, 2026-10-16): silence is how these failures
         # survived weeks. Shout when render or delivery fails. ----
         if records > 0 and GENERATE_CHARTS:
-            if total_charts == 0:
+            if _rendered == 0:
                 log_error(f"OUTPUT GUARD: 0 charts rendered from {records} records "
                           f"(chart generation failed silently?)", critical=True)
             elif _posted < total_charts:
