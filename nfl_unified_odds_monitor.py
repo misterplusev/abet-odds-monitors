@@ -1411,12 +1411,25 @@ def _get_league_logo():
         import numpy as np
         from PIL import Image
         fname = "%s_logo.png" % _LEAGUE_SLUG.lower()
-        base = os.environ.get("ABET_BASE_DIR", str(Path(__file__).parent.parent))
-        p = Path(base) / "assets" / fname
-        if not p.exists():
-            p = Path(__file__).parent.parent / "assets" / fname
-        if not p.exists():
-            log_warn(f"League logo asset missing: {fname}")
+        # Candidate asset roots, in order. A monitor can live in a scripts/ subdir
+        # (HF Space: <repo>/scripts/x.py, so parent.parent IS the repo) or at a repo
+        # root (the NFL GitHub Actions lane: <repo>/x.py, so parent IS the repo).
+        # Checking only parent.parent made the NFL lane miss assets/ entirely.
+        cands = []
+        base = os.environ.get("ABET_BASE_DIR")
+        if base:
+            cands.append(Path(base))
+        cands.append(Path(__file__).parent.parent)
+        cands.append(Path(__file__).parent)
+        p = None
+        for c in cands:
+            cand = c / "assets" / fname
+            if cand.exists():
+                p = cand
+                break
+        if p is None:
+            log_warn(f"League logo asset missing: {fname} (looked in "
+                     + ", ".join(str(c / "assets") for c in cands) + ")")
             return _LEAGUE_LOGO
         img = Image.open(p).convert("RGBA")
         ys, xs = np.where(np.array(img)[..., 3] > 8)
