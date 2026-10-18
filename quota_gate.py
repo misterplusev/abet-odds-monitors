@@ -66,7 +66,7 @@ API_BASE = os.environ.get("QUOTA_API_BASE", "https://api.the-odds-api.com/v4").r
 
 def scan_keys():
     remaining, dead, used = 0, [], 0
-    for i in range(1, 10):
+    for i in range(1, 11):
         key = os.environ.get(f"ODDS_API_KEY_{i}", "")
         if not key:
             continue
@@ -83,7 +83,7 @@ def scan_keys():
 
 def scan_sports():
     """Free endpoint: is any NFL sport key currently offering odds?"""
-    key = next((os.environ.get(f"ODDS_API_KEY_{i}") for i in range(1, 10)
+    key = next((os.environ.get(f"ODDS_API_KEY_{i}") for i in range(1, 11)
                 if os.environ.get(f"ODDS_API_KEY_{i}")), None)
     if not key:
         return []

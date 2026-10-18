@@ -277,7 +277,7 @@ DISCORD_WEBHOOK_TOTALS    = os.environ.get("DISCORD_WEBHOOK_NFL_TOTALS", "")
 # v006/v007 rotation algorithm). NFL-dedicated keys can be swapped in later
 # by replacing the values — no code change needed.
 API_KEYS = []
-for _i in range(1, 10):
+for _i in range(1, 11):
     _k = os.environ.get(f"ODDS_API_KEY_{_i}", "")
     if _k:
         API_KEYS.append((_k, f"API_{_i}"))
