@@ -1,13 +1,13 @@
 {
- "scanned_at": "2026-10-18T22:34:11.496649+00:00",
+ "scanned_at": "2026-10-18T22:36:18.565976+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 2.2,
+ "loop_uptime_min": 4.3,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 21699,
+   "markets": 35931,
    "last_tick_age_s": 0.0
   },
   {
@@ -19,8 +19,8 @@
   {
    "venue": "pmglobal",
    "state": "OK",
-   "markets": 100,
-   "last_tick_age_s": 4.8
+   "markets": 101,
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "novig",
@@ -36,36 +36,37 @@
   }
  ],
  "totals": {
-  "markets_tracked": 29797,
+  "markets_tracked": 44030,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "gist_errors": 3,
+  "commits": 1,
+  "gist_errors": 5,
   "hot_errors": 0,
-  "kalshi.sweeps": 12,
-  "kalshi.ticks": 136062,
-  "kalshi.updates": 87713,
-  "kalshi.ws_ticks": 136062,
-  "kalshi.ws_trades": 28882,
-  "novig.sweep_errors": 11,
-  "pairs_blocked_antonym_date": 15,
-  "pmglobal.rest_updates": 257,
-  "pmglobal.sweeps": 11,
-  "pmglobal.ticks": 1572,
-  "pmglobal.updates": 448,
-  "pmglobal.ws_msgs": 109446,
-  "pmglobal.ws_ticks": 372,
-  "pmus.rest_updates": 8143,
-  "pmus.sweeps": 12,
-  "pmus.ticks": 103974,
-  "pmus.updates": 8143,
+  "kalshi.sweeps": 22,
+  "kalshi.ticks": 285465,
+  "kalshi.updates": 175013,
+  "kalshi.ws_ticks": 285465,
+  "kalshi.ws_trades": 65717,
+  "novig.sweep_errors": 21,
+  "pairs_blocked_antonym_date": 27,
+  "pmglobal.rest_updates": 365,
+  "pmglobal.sweeps": 21,
+  "pmglobal.ticks": 2841,
+  "pmglobal.updates": 666,
+  "pmglobal.ws_msgs": 211146,
+  "pmglobal.ws_ticks": 641,
+  "pmus.rest_updates": 8262,
+  "pmus.sweeps": 22,
+  "pmus.ticks": 183954,
+  "pmus.updates": 8262,
   "pmus_x.last_count": 7998,
-  "pmus_x.sweeps": 13,
-  "prophetx.ws_errors": 8,
+  "pmus_x.sweeps": 23,
+  "prophetx.ws_errors": 15,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 11,
-  "supa_errors": 41
+  "pxboard.sweeps": 21,
+  "supa_errors": 80
  },
  "arbitrages": []
 }
