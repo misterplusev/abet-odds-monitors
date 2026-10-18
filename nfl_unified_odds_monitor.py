@@ -1217,7 +1217,7 @@ def _format_x_axis(ax, book_df):
     # Format: time on top, date below
     time_range = ts.max() - ts.min()
     if time_range < pd.Timedelta(days=1):
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%I:%M%p\n%m/%d', tz=eastern))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%I:%M%p', tz=eastern))
     else:
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%I:%M%p', tz=eastern))
 
@@ -1294,7 +1294,7 @@ def _plot_book_lines(ax, book_df, avg_df):
     ax.set_ylabel('American Odds', fontsize=10, color='#CCCCCC')
 
 
-def _add_odds_header(ax, book_df, avg_df, prefix: str = ""):
+def _add_odds_header(ax, book_df, avg_df, prefix: str = "", label: str = ""):
     """Add MIN/AVG/MAX header text to chart panel."""
     if book_df.empty:
         return
@@ -1302,14 +1302,18 @@ def _add_odds_header(ax, book_df, avg_df, prefix: str = ""):
     if len(latest) == 0:
         return
     lo, hi = min(latest), max(latest)
-    parts = [prefix] if prefix else []
+    parts = [label] if label else []
+    if prefix:
+        parts.append(prefix)
     parts.append(f"MIN: {lo:+d}")
     if not avg_df.empty:
         parts.append(f"AVG: {avg_df.iloc[-1]['price_american']:+d}")
     parts.append(f"MAX: {hi:+d}")
     txt = "  •  ".join(parts)
+    import matplotlib.patheffects as _pe
     ax.text(0.5, 0.98, txt, transform=ax.transAxes, fontsize=11, color='#FFD700',
             weight='bold', va='top', ha='center',
+            path_effects=[_pe.SimpleLineShadow(offset=(2, -2), alpha=0.6, rho=0.3), _pe.Normal()],
             bbox=dict(boxstyle='round,pad=0.4', facecolor='#1A1F2E',
                       edgecolor='#FFD700', linewidth=2, alpha=0.9))
 
@@ -1380,56 +1384,207 @@ def _get_team_logo_for_chart(team_name: str, size: int = 36):
     return logo
 
 
-def _add_logo_title(fig, away_team: str, home_team: str, title_text: str, game_time: str):
-    """Title band with both team logos embedded — mirrors MLB's implementation.
 
-    Geometry is copied exactly from mlb_unified_odds_monitor._add_logo_title so
-    NFL and MLB charts are visually interchangeable: a dedicated axes occupying
-    the top 8% of the figure, text centred, logos at x=0.32 and x=0.68.
-    That band is the 12% tight_layout already reserves via rect=[0,0,1,0.88].
+# League logo for THIS monitor's sport, loaded lazily from assets/<league>_logo.png.
+# The filename used to be hardcoded to "mlb_logo.png" in all four league monitors, so
+# NBA and NHL rendered the MLB badge and NFL rendered no logo at all (no assets/ dir).
+_LEAGUE_SLUG = "NFL"
+_LEAGUE_LOGO = None
+_LEAGUE_LOGO_LEAGUE = None
+
+
+def _get_league_logo():
+    """Return this sport's league logo cropped to its opaque ink (no transparent padding).
+
+    The natural aspect ratio is preserved. NFL/NBA/NHL marks are portrait, so the old
+    forced resize to a fixed 269x142 canvas stretched them badly. The header scales by
+    height and derives width from the measured extent, so no resize is needed here.
+    """
+    global _LEAGUE_LOGO, _LEAGUE_LOGO_LEAGUE
+    if _LEAGUE_LOGO is not None and _LEAGUE_LOGO_LEAGUE == _LEAGUE_SLUG:
+        return _LEAGUE_LOGO
+    _LEAGUE_LOGO = False
+    _LEAGUE_LOGO_LEAGUE = _LEAGUE_SLUG
+    try:
+        import os
+        from pathlib import Path
+        import numpy as np
+        from PIL import Image
+        fname = "%s_logo.png" % _LEAGUE_SLUG.lower()
+        base = os.environ.get("ABET_BASE_DIR", str(Path(__file__).parent.parent))
+        p = Path(base) / "assets" / fname
+        if not p.exists():
+            p = Path(__file__).parent.parent / "assets" / fname
+        if not p.exists():
+            log_warn(f"League logo asset missing: {fname}")
+            return _LEAGUE_LOGO
+        img = Image.open(p).convert("RGBA")
+        ys, xs = np.where(np.array(img)[..., 3] > 8)
+        if len(xs) == 0:
+            log_warn(f"League logo has no opaque pixels: {fname}")
+            return _LEAGUE_LOGO
+        ink = img.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+        _LEAGUE_LOGO = np.array(ink)
+    except Exception as e:
+        log_warn(f"League logo load failed ({_LEAGUE_SLUG}): {e}")
+    return _LEAGUE_LOGO
+
+def _add_logo_title(fig, away_team: str, home_team: str, title_text: str, game_time: str):
+    """Borderless header: MLB logo LEFT, team logos CENTERED, date/time stacked RIGHT.
+
+    No boxes, no pills, no band spines - just the elements on the band background.
+    Element sizes are MEASURED on a throwaway probe axes built with the band's exact
+    geometry, then discarded: matplotlib's rendered extent does not match the analytic
+    arr*zoom*(dpi/72) formula, and measuring on the real band leaves stray artists
+    behind. Because the probe matches the band, measured px widths convert straight to
+    band fractions and every final position is computed once.
+    Call AFTER the final plt.tight_layout().
     """
     try:
         from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-
-        away_logo = _get_team_logo_for_chart(away_team, size=36)
-        home_logo = _get_team_logo_for_chart(home_team, size=36)
-
-        if away_logo is None and home_logo is None:
-            fig.suptitle(title_text, fontsize=14, color='white', fontweight='bold')
+        from matplotlib.textpath import TextPath
+        from matplotlib.font_manager import FontProperties
+        import numpy as np
+        import re
+        league = _LEAGUE_SLUG
+        axes = fig.get_axes()
+        if not axes:
             return
+        left = axes[0].get_position().x0
 
-        fig.suptitle('', fontsize=1)                      # clear the default
-        ax_title = fig.add_axes([0, 0.92, 1, 0.08])
-        ax_title.set_xlim(0, 1)
-        ax_title.set_ylim(0, 1)
-        ax_title.axis('off')
+        BAND_H = 0.13
+        BAND_TOP = 0.87
+        PAD_PX = 12.0
+        GAP_PX = 14.0
+        STACK_GAP_PX = 3.0
+        GOLD = '#FFD700'
 
-        away_abbr = TEAM_ABBR.get(away_team, away_team)
-        home_abbr = TEAM_ABBR.get(home_team, home_team)
-        ax_title.text(0.5, 0.5,
-                      f"  {away_abbr}  @  {home_abbr}  — {game_time}  ",
-                      transform=ax_title.transAxes,
-                      fontsize=14, color='white', fontweight='bold',
-                      ha='center', va='center')
+        fig_w, fig_h, dpi = fig.get_figwidth(), fig.get_figheight(), float(fig.dpi)
+        band_w_px = (1.0 - left) * fig_w * dpi
+        band_h_px = BAND_H * fig_h * dpi
+        pad_x, gap_x = PAD_PX / band_w_px, GAP_PX / band_w_px
+        # Right-align the date/time to the CHART's right edge, not the band's: the band
+        # spans to the figure edge but the plot area stops short of it.
+        pad_fig = 0.0                      # exact alignment to the chart edge
+        text_right_b = ((axes[0].get_position().x1 - pad_fig) - left) / (1.0 - left)
+        stack_gap = STACK_GAP_PX / band_h_px
+        logo_h_b = (BAND_H * fig_h * dpi - 4.0) / band_h_px
 
-        if away_logo is not None:
-            ax_title.add_artist(AnnotationBbox(
-                OffsetImage(away_logo, zoom=0.8), (0.32, 0.5),
-                frameon=False, xycoords='axes fraction'))
-        if home_logo is not None:
-            ax_title.add_artist(AnnotationBbox(
-                OffsetImage(home_logo, zoom=0.8), (0.68, 0.5),
-                frameon=False, xycoords='axes fraction'))
+        band = fig.add_axes([left, BAND_TOP, 1.0 - left, BAND_H])
+        band.set_in_layout(False)
+        band.set_xlim(0, 1); band.set_ylim(0, 1)
+        band.set_facecolor('#0F1419')
+        band.set_xticks([]); band.set_yticks([])
+        for side in band.spines.values():
+            side.set_visible(False)
+
+        probe = fig.add_axes([left, BAND_TOP, 1.0 - left, BAND_H])
+        probe.set_xlim(0, 1); probe.set_ylim(0, 1)
+        probe.set_axis_off()
+        probe.patch.set_visible(False)
+
+        def measure_logo(arr):
+            if not isinstance(arr, np.ndarray) or arr.ndim != 3 or arr.shape[2] != 4:
+                return None, 0.0, 0.0
+            ys, xs = np.where(arr[..., 3] > 8)
+            if len(xs) == 0:
+                return None, 0.0, 0.0
+            arr = arr[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+            z = (logo_h_b * band_h_px) * 72.0 / (arr.shape[0] * dpi)
+            a = AnnotationBbox(OffsetImage(arr, zoom=z), (0, 0.5), frameon=False,
+                               xycoords='axes fraction', box_alignment=(0, 0.5), pad=0)
+            probe.add_artist(a)
+            fig.canvas.draw()
+            e = a.get_window_extent()
+            a.remove()
+            return arr, z, e.width / band_w_px
+
+        def measure_text(txt, fsz):
+            t = probe.text(0, 0.5, txt, transform=probe.transAxes, fontsize=fsz,
+                           fontweight='bold', ha='left', va='center')
+            fig.canvas.draw()
+            e = t.get_window_extent()
+            w_b, h_b = e.width / band_w_px, e.height / band_h_px
+            t.remove()
+            return w_b, h_b
+
+        def put_logo(arr, z, x):
+            if arr is None:
+                return
+            a = AnnotationBbox(OffsetImage(arr, zoom=z), (x, 0.5), frameon=False,
+                               xycoords='axes fraction', box_alignment=(0, 0.5),
+                               pad=0, clip_on=True)
+            a.set_clip_path(band.patch)
+            band.add_artist(a)
+
+        def font_for(txt, ratio):
+            return (logo_h_b * band_h_px * ratio) / max(
+                float(TextPath((0, 0), txt, size=1.0).get_extents().height), 1e-6)
+
+        bb_at = TextPath((0, 0), '@', size=1.0,
+                         prop=FontProperties(weight='bold')).get_extents()
+        fs_at = (logo_h_b * band_h_px * 0.42) / (float(bb_at.height) or 1.0)
+
+        mlb_arr, mlb_z, mlb_w = measure_logo(_get_league_logo())
+        away_arr, away_z, away_w = measure_logo(_get_team_logo_for_chart(away_team, size=256))
+        home_arr, home_z, home_w = measure_logo(_get_team_logo_for_chart(home_team, size=256))
+        at_w, at_h = measure_text('@', fs_at)
+        grp_w = away_w + gap_x + at_w + gap_x + home_w
+
+        date_s, time_s = '', ''
+        if game_time:
+            mm = re.match(r'^\s*(\d{2}/\d{2})\s+(.+?)\s*$', game_time)
+            if mm:
+                date_s, time_s = mm.group(1), mm.group(2)
+            else:
+                date_s = game_time
+
+        fs_d = fs_t = None
+        d_w = d_h = t_w = t_h = 0.0
+        if date_s or time_s:
+            fs_d = font_for(date_s or time_s, 0.22)
+            fs_t = font_for(time_s or date_s, 0.17)
+            # The stack must stay inside the band; shrink both until it does.
+            for _ in range(12):
+                if date_s:
+                    d_w, d_h = measure_text(date_s, fs_d)
+                if time_s:
+                    t_w, t_h = measure_text(time_s, fs_t)
+                if (d_h + stack_gap + t_h) <= 0.92 or fs_d <= 6.0:
+                    break
+                fs_d *= 0.92
+                fs_t *= 0.92
+        stack_h = d_h + stack_gap + t_h
+        y_date = 0.5 + (stack_h - d_h) / 2.0
+        y_time = 0.5 - stack_h / 2.0 + t_h / 2.0
+        text_left = text_right_b - max(d_w, t_w)
+
+        mlb_x = pad_x
+        put_logo(mlb_arr, mlb_z, mlb_x)
+
+        if away_arr is not None:
+            avail_l = mlb_x + mlb_w + gap_x
+            avail_r = text_left - gap_x
+            gx = max((avail_l + avail_r) / 2.0 - grp_w / 2.0, avail_l)
+            put_logo(away_arr, away_z, gx)
+            band.text(gx + away_w + gap_x, 0.5, '@', transform=band.transAxes,
+                      fontsize=fs_at, color='#9CA3AF', fontweight='bold',
+                      ha='left', va='center', clip_on=True)
+            put_logo(home_arr, home_z, gx + away_w + gap_x + at_w + gap_x)
+
+        if date_s:
+            band.text(text_right_b, y_date, date_s, transform=band.transAxes,
+                      fontsize=fs_d, color=GOLD, fontweight='bold',
+                      ha='right', va='center', clip_on=True)
+        if time_s:
+            band.text(text_right_b, y_time, time_s, transform=band.transAxes,
+                      fontsize=fs_t, color='#9CA3AF', fontweight='bold',
+                      ha='right', va='center', clip_on=True)
+        probe.remove()
     except Exception as e:
-        # Any failure falls back to the plain title rather than losing the chart.
         log_warn(f"Logo title failed: {e}")
-        try:
-            fig.suptitle(title_text, fontsize=14, color='white', fontweight='bold')
-        except Exception:
-            pass
 
 
-# ==========================================================================
 # MONEYLINE CHARTS
 # ==========================================================================
 
@@ -1465,8 +1620,7 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
                     "AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team))
                 _plot_book_lines(ax, bdf, adf)
-                _add_odds_header(ax, bdf, adf)
-                ax.set_title(f'{abbreviate_team(team)} MONEYLINE', fontsize=13, color='white', fontweight='bold')
+                _add_odds_header(ax, bdf, adf, label=f'{abbreviate_team(team)} MONEYLINE')
                 if ax == ax1 and not bdf.empty:
                     leg = ax.legend(loc='upper left', fontsize=8, ncol=2,
                                     facecolor='#1A1F2E', edgecolor='#4A5568', framealpha=0.9)
@@ -1480,12 +1634,12 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
             gt = _game_title(row)
             # Enhanced title with team logos
             title_text = f"{row['away_team']} @ {row['home_team']} MONEYLINE — {gt}"
-            _add_logo_title(fig, row['away_team'], row['home_team'], title_text, gt)
 
             ax2.set_xlabel('Time', fontsize=10, color='#CCCCCC')
             for lbl in ax2.xaxis.get_ticklabels():
                 lbl.set_rotation(45); lbl.set_ha('right'); lbl.set_color('#CCCCCC')
-            plt.tight_layout()
+            plt.tight_layout(rect=[0, 0, 1, 0.87])
+            _add_logo_title(fig, row['away_team'], row['home_team'], title_text, gt)
 
             path = CHARTS_DIR / f"{gid[:8]}_ml_{datetime.now().strftime('%H%M%S')}.png"
             plt.savefig(path, dpi=130, facecolor='#0F1419', bbox_inches='tight')
@@ -1550,8 +1704,7 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
                     conn, params=(gid, team, spread))
                 _plot_book_lines(ax, bdf, adf)
                 sp_txt = f"+{spread}" if spread > 0 else str(spread)
-                _add_odds_header(ax, bdf, adf, prefix=f"SPREAD: {sp_txt}")
-                ax.set_title(f'{abbreviate_team(team)} ({sp_txt})', fontsize=13, color='white', fontweight='bold')
+                _add_odds_header(ax, bdf, adf, prefix=f"SPREAD: {sp_txt}", label=f'{abbreviate_team(team)} SPREAD')
                 if ax == ax1 and not bdf.empty:
                     leg = ax.legend(loc='upper left', fontsize=8, ncol=2,
                                     facecolor='#1A1F2E', edgecolor='#4A5568', framealpha=0.9)
@@ -1566,12 +1719,12 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
             label = f"SPREAD {hs:+g}/{row['away_spread']:+g}"
             gt = _game_title(row)
             title_text = f"{row['away_team']} @ {row['home_team']} {label} — {gt}"
-            _add_logo_title(fig, row['away_team'], row['home_team'], title_text, gt)
 
             ax2.set_xlabel('Time', fontsize=10, color='#CCCCCC')
             for lbl in ax2.xaxis.get_ticklabels():
                 lbl.set_rotation(45); lbl.set_ha('right'); lbl.set_color('#CCCCCC')
-            plt.tight_layout()
+            plt.tight_layout(rect=[0, 0, 1, 0.87])
+            _add_logo_title(fig, row['away_team'], row['home_team'], title_text, gt)
 
             hs_s = str(hs).replace('.', '_').replace('-', 'neg')
             path = CHARTS_DIR / f"{gid[:8]}_sp_{hs_s}_{datetime.now().strftime('%H%M%S')}.png"
@@ -1631,8 +1784,7 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
                     "AND market_key='totals' AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, outcome, total))
                 _plot_book_lines(ax, bdf, adf)
-                _add_odds_header(ax, bdf, adf, prefix=f"TOTAL: {total}")
-                ax.set_title(f'{outcome} {total}', fontsize=13, color='white', fontweight='bold')
+                _add_odds_header(ax, bdf, adf, prefix=f"TOTAL: {total}", label=f'{outcome} TOTAL')
                 if ax == ax1 and not bdf.empty:
                     leg = ax.legend(loc='upper left', fontsize=8, ncol=2,
                                     facecolor='#1A1F2E', edgecolor='#4A5568', framealpha=0.9)
@@ -1645,12 +1797,12 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
 
             gt = _game_title(row)
             title_text = f"{row['away_team']} @ {row['home_team']} TOTAL {total} — {gt}"
-            _add_logo_title(fig, row['away_team'], row['home_team'], title_text, gt)
 
             ax2.set_xlabel('Time', fontsize=10, color='#CCCCCC')
             for lbl in ax2.xaxis.get_ticklabels():
                 lbl.set_rotation(45); lbl.set_ha('right'); lbl.set_color('#CCCCCC')
-            plt.tight_layout()
+            plt.tight_layout(rect=[0, 0, 1, 0.87])
+            _add_logo_title(fig, row['away_team'], row['home_team'], title_text, gt)
 
             ts = str(total).replace('.', '_')
             path = CHARTS_DIR / f"{gid[:8]}_tot_{ts}_{datetime.now().strftime('%H%M%S')}.png"
