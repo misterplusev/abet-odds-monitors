@@ -1235,8 +1235,24 @@ def _american_formatter(y, pos):
 
 
 def _plot_book_lines(ax, book_df, avg_df):
-    """Plot individual bookmaker lines + average line on an axis."""
+    """Plot individual bookmaker lines + average line on an axis.
+    Limits (point values) are plotted as dashed lines on a secondary left axis."""
     eastern = pytz.timezone('US/Eastern')
+
+    # Check if we have point/limit data
+    has_points = False
+    if not book_df.empty and 'point' in book_df.columns:
+        pts = book_df['point'].dropna()
+        has_points = len(pts) > 0 and not pts.isna().all()
+
+    # Secondary axis for limits (left side)
+    ax_limits = None
+    if has_points:
+        ax_limits = ax.twinx()
+        ax_limits.yaxis.set_ticks_position('left')
+        ax_limits.yaxis.set_label_position('left')
+        ax_limits.spines['left'].set_position(('outward', 0))
+        ax_limits.spines['right'].set_visible(False)
 
     # Average line
     if not avg_df.empty:
@@ -1245,11 +1261,13 @@ def _plot_book_lines(ax, book_df, avg_df):
         avg_df['price_decimal'] = avg_df['price_american'].apply(american_to_decimal)
 
         match = re.search(r'\((\d+) books?\)', str(avg_df['bookmaker_title'].iloc[0]))
-        nbooks = match.group(1) if match else "?"
+        nbooks = int(match.group(1)) if match else None
+        noun = 'book' if nbooks == 1 else 'books'
+        avg_label = f'AVERAGE ({nbooks} {noun})' if nbooks is not None else 'AVERAGE (? books)'
 
         if len(avg_df) > 1:
             ax.plot(avg_df['created_at'], avg_df['price_decimal'],
-                    label=f'AVERAGE ({nbooks} books)', color='#FFD700',
+                    label=avg_label, color='#FFD700',
                     linewidth=3.5, linestyle='--', alpha=0.9, zorder=10)
             ax.scatter(avg_df['created_at'].iloc[0], avg_df['price_decimal'].iloc[0],
                        color='#FFD700', s=150, zorder=20, edgecolor='white', linewidth=2, marker='s')
@@ -1257,7 +1275,7 @@ def _plot_book_lines(ax, book_df, avg_df):
                        color='#FFD700', s=150, zorder=20, edgecolor='yellow', linewidth=2, marker='^')
         else:
             ax.scatter(avg_df['created_at'].iloc[0], avg_df['price_decimal'].iloc[0],
-                       label=f'AVERAGE ({nbooks} books)', color='#FFD700',
+                       label=avg_label, color='#FFD700',
                        s=250, marker='D', edgecolor='white', linewidth=2, zorder=10)
 
     # Individual bookmakers
@@ -1268,7 +1286,7 @@ def _plot_book_lines(ax, book_df, avg_df):
 
         for bk in book_df['bookmaker_key'].unique():
             bd = book_df[book_df['bookmaker_key'] == bk].sort_values('created_at')
-            clr = BOOKMAKER_COLORS.get(bk, '#888888')
+            clr = get_bookmaker_colors().get(bk, '#888888')
             if len(bd) > 1:
                 ax.plot(bd['created_at'], bd['price_decimal'],
                         label=bd['bookmaker_title'].iloc[0], color=clr,
@@ -1279,7 +1297,14 @@ def _plot_book_lines(ax, book_df, avg_df):
                            label=bd['bookmaker_title'].iloc[0], color=clr,
                            s=150, marker='o', edgecolor='white', linewidth=2, zorder=15)
 
-    # Y-axis range
+            # Plot limits (point values) as dashed lines on secondary axis
+            if ax_limits is not None and 'point' in bd.columns:
+                pts = bd.dropna(subset=['point'])
+                if not pts.empty and pts['point'].notna().any():
+                    ax_limits.plot(pts['created_at'], pts['point'],
+                                   color=clr, linestyle=':', linewidth=1.5, alpha=0.7, zorder=8)
+
+    # Y-axis range for odds (right)
     all_dec = list(book_df['price_decimal']) if not book_df.empty else []
     if not avg_df.empty:
         all_dec.extend(list(avg_df['price_decimal']))
@@ -1293,6 +1318,17 @@ def _plot_book_lines(ax, book_df, avg_df):
     ax.yaxis.set_label_position('right')
     ax.set_ylabel('American Odds', fontsize=10, color='#CCCCCC')
 
+    # Y-axis range for limits (left)
+    if ax_limits is not None:
+        all_pts = list(book_df['point'].dropna()) if not book_df.empty and 'point' in book_df.columns else []
+        if all_pts:
+            pmin, pmax = min(all_pts), max(all_pts)
+            ppad = abs(pmax - pmin) * 0.15 or 0.5
+            ax_limits.set_ylim(pmin - ppad, pmax + ppad)
+            ax_limits.set_ylabel('Line / Limit', fontsize=10, color='#CCCCCC')
+            ax_limits.tick_params(axis='y', labelcolor='#CCCCCC')
+        else:
+            ax_limits.set_visible(False)
 
 def _add_odds_header(ax, book_df, avg_df, prefix: str = "", label: str = ""):
     """Add MIN/AVG/MAX header text to chart panel."""
@@ -1623,12 +1659,12 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
             for ax, team in zip([ax1, ax2], [row['away_team'], row['home_team']]):
                 _setup_axes(ax)
                 bdf = pd.read_sql_query(
-                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american, point "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND market_key='h2h' "
                     "AND bookmaker_key!='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team))
                 adf = pd.read_sql_query(
-                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, bookmaker_title "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, point, bookmaker_title "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND market_key='h2h' "
                     "AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team))
@@ -1706,12 +1742,12 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
                                          [row['home_spread'], row['away_spread']]):
                 _setup_axes(ax)
                 bdf = pd.read_sql_query(
-                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american, point "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
                     "AND market_key='spreads' AND bookmaker_key!='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team, spread))
                 adf = pd.read_sql_query(
-                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, bookmaker_title "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, point, bookmaker_title "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
                     "AND market_key='spreads' AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, team, spread))
@@ -1787,12 +1823,12 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
             for ax, outcome in zip([ax1, ax2], ['Over', 'Under']):
                 _setup_axes(ax)
                 bdf = pd.read_sql_query(
-                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, bookmaker_key, bookmaker_title, price_american, point "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
                     "AND market_key='totals' AND bookmaker_key!='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, outcome, total))
                 adf = pd.read_sql_query(
-                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, bookmaker_title "
+                    "SELECT strftime('%Y-%m-%d %H:%M:%S', created_at) AS created_at, price_american, point, bookmaker_title "
                     "FROM odds_history WHERE game_id=? AND outcome_name=? AND point=? "
                     "AND market_key='totals' AND bookmaker_key='_average' ORDER BY strftime('%Y-%m-%d %H:%M:%S', created_at)",
                     conn, params=(gid, outcome, total))
