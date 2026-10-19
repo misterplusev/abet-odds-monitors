@@ -2021,6 +2021,11 @@ def run_iteration() -> int:
         # Dataset snapshot is additive and only fires if HF_TOKEN is present;
         # both use INSERT OR IGNORE so running both cannot double-count.
         restored = restore_from_supabase()
+        try:
+            if durable_state.load_gzipped_db("odds_nfl.db.gz", str(DB_PATH)):
+                restored += 1
+        except Exception:
+            pass
         restored += restore_odds_history()
         if not restored:
             log_warn("No prior odds history restored — charts this run will show "
@@ -2140,6 +2145,10 @@ def run_iteration() -> int:
         # LAST ACT OF THE RUN. The runner is about to be destroyed; everything
         # this cycle collected exists only in a file that is about to vanish.
         snapshot_odds_history()
+        try:
+            durable_state.save_gzipped_db(str(DB_PATH), "odds_nfl.db.gz")
+        except Exception:
+            pass
         return 0
 
     except KeyboardInterrupt:

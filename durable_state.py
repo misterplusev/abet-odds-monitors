@@ -309,3 +309,77 @@ def load_gz_json(name: str, default=None):
     except Exception as e:
         print(f"[STATE] {name} read failed: {e}", flush=True)
     return default
+
+
+# ---------------------------------------------------------------------------
+# Binary file storage (gzipped SQLite DBs, logs, charts)
+# ---------------------------------------------------------------------------
+
+def save_binary(name, data, force=False):
+    if not enabled():
+        return False
+    try:
+        import base64, json
+        b64 = base64.b64encode(data).decode('ascii')
+        ndjson = (
+            json.dumps({'key': 'header', 'value': {'summary': 'binary: ' + name}}) + chr(10) +
+            json.dumps({'key': 'file', 'value': {'path': name, 'content': b64, 'encoding': 'base64'}}) + chr(10)
+        ).encode('utf-8')
+        r = requests.post('https://huggingface.co/api/datasets/' + REPO + '/commit/main', data=ndjson, headers={'Authorization': 'Bearer ' + HF_TOKEN, 'Content-Type': 'application/x-ndjson', 'User-Agent': _UA}, timeout=120)
+        if r.status_code == 200:
+            return True
+        print('[STATE] save_binary ' + name + ' -> HTTP ' + str(r.status_code), flush=True)
+    except Exception as e:
+        print('[STATE] save_binary ' + name + ' failed: ' + str(e), flush=True)
+    return False
+
+def load_binary(name):
+    if not enabled():
+        return None
+    try:
+        r = requests.get('https://huggingface.co/datasets/' + REPO + '/resolve/main/' + name, headers={'Authorization': 'Bearer ' + HF_TOKEN, 'User-Agent': _UA}, timeout=60)
+        if r.status_code == 200:
+            return r.content
+        if r.status_code != 404:
+            print('[STATE] load_binary ' + name + ' -> HTTP ' + str(r.status_code), flush=True)
+    except Exception as e:
+        print('[STATE] load_binary ' + name + ' failed: ' + str(e), flush=True)
+    return None
+
+def save_gzipped_db(db_path, remote_name):
+    try:
+        import gzip
+        from pathlib import Path
+        p = Path(db_path)
+        if not p.exists():
+            return False
+        raw = p.read_bytes()
+        gz = gzip.compress(raw, compresslevel=9)
+        print('[STATE] pushing ' + p.name + ' (' + str(len(raw)) + ' -> ' + str(len(gz)) + ' bytes)', flush=True)
+        return save_binary(remote_name, gz)
+    except Exception as e:
+        print('[STATE] save_gzipped_db failed: ' + str(e), flush=True)
+        return False
+
+def load_gzipped_db(remote_name, local_path):
+    try:
+        import gzip
+        from pathlib import Path
+        data = load_binary(remote_name)
+        if not data:
+            return False
+        raw = gzip.decompress(data)
+        Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(local_path).write_bytes(raw)
+        print('[STATE] restored ' + remote_name + ' -> ' + local_path + ' (' + str(len(raw)) + ' bytes)', flush=True)
+        return True
+    except Exception as e:
+        print('[STATE] load_gzipped_db failed: ' + str(e), flush=True)
+        return False
+
+def push_log(name, log_text):
+    try:
+        return save_binary(name, log_text.encode('utf-8'), force=True)
+    except Exception as e:
+        print('[STATE] push_log failed: ' + str(e), flush=True)
+        return False
