@@ -1,25 +1,25 @@
 {
- "scanned_at": "2026-10-19T05:09:29.305879+00:00",
+ "scanned_at": "2026-10-19T05:11:31.184645+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 4.2,
+ "loop_uptime_min": 6.2,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 21191,
+   "markets": 27224,
    "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7998,
-   "last_tick_age_s": 0.1
+   "last_tick_age_s": 0.2
   },
   {
    "venue": "pmglobal",
    "state": "OK",
-   "markets": 102,
+   "markets": 103,
    "last_tick_age_s": 0.0
   },
   {
@@ -36,36 +36,36 @@
   }
  ],
  "totals": {
-  "markets_tracked": 29291,
+  "markets_tracked": 35325,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 1,
-  "gist_errors": 4,
+  "commits": 2,
+  "gist_errors": 7,
   "hot_errors": 0,
-  "kalshi.sweeps": 28,
-  "kalshi.ticks": 136335,
-  "kalshi.updates": 81947,
-  "kalshi.ws_ticks": 136335,
-  "kalshi.ws_trades": 31887,
-  "novig.sweep_errors": 27,
-  "pmglobal.rest_updates": 261,
-  "pmglobal.sweeps": 27,
-  "pmglobal.ticks": 3291,
-  "pmglobal.updates": 453,
-  "pmglobal.ws_msgs": 42137,
-  "pmglobal.ws_ticks": 491,
-  "pmus.rest_updates": 8271,
-  "pmus.sweeps": 28,
-  "pmus.ticks": 231942,
-  "pmus.updates": 8271,
+  "kalshi.sweeps": 43,
+  "kalshi.ticks": 209609,
+  "kalshi.updates": 123868,
+  "kalshi.ws_ticks": 209609,
+  "kalshi.ws_trades": 50355,
+  "novig.sweep_errors": 42,
+  "pmglobal.rest_updates": 315,
+  "pmglobal.sweeps": 42,
+  "pmglobal.ticks": 5077,
+  "pmglobal.updates": 618,
+  "pmglobal.ws_msgs": 67701,
+  "pmglobal.ws_ticks": 777,
+  "pmus.rest_updates": 8376,
+  "pmus.sweeps": 43,
+  "pmus.ticks": 351912,
+  "pmus.updates": 8376,
   "pmus_x.last_count": 7998,
-  "pmus_x.sweeps": 29,
-  "prophetx.ws_errors": 14,
+  "pmus_x.sweeps": 44,
+  "prophetx.ws_errors": 22,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 27,
-  "supa_errors": 82
+  "pxboard.sweeps": 42,
+  "supa_errors": 127
  },
  "arbitrages": []
 }
