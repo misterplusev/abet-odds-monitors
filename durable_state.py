@@ -369,6 +369,7 @@ def save_gzipped_db(db_path, remote_name):
 def load_gzipped_db(remote_name, local_path):
     try:
         import gzip
+        import sqlite3
         from pathlib import Path
         data = load_binary(remote_name)
         if not data:
@@ -376,6 +377,18 @@ def load_gzipped_db(remote_name, local_path):
         raw = gzip.decompress(data)
         Path(local_path).parent.mkdir(parents=True, exist_ok=True)
         Path(local_path).write_bytes(raw)
+        # Migrate: add bet_limit column if missing
+        try:
+            conn = sqlite3.connect(local_path)
+            for _tbl in ("odds", "odds_history"):
+                try:
+                    conn.execute("ALTER TABLE " + _tbl + " ADD COLUMN bet_limit REAL")
+                    conn.commit()
+                except Exception:
+                    pass
+            conn.close()
+        except Exception:
+            pass
         print("[STATE] restored " + remote_name + " -> " + local_path + " (" + str(len(raw)) + " bytes)", flush=True)
         return True
     except Exception as e:
