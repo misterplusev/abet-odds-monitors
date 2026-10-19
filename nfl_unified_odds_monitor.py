@@ -699,9 +699,16 @@ def setup_database() -> bool:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             game_id TEXT, fetch_timestamp TEXT, bookmaker_key TEXT, bookmaker_title TEXT,
             market_key TEXT, outcome_name TEXT, price_decimal REAL,
-            price_american INTEGER, point REAL, is_live_game BOOLEAN,
+            price_american INTEGER, point REAL, bet_limit REAL, is_live_game BOOLEAN,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )""")
+
+        # Migrate: add bet_limit column if missing (existing DBs)
+        for _tbl in ("odds", "odds_history"):
+            try:
+                c.execute("ALTER TABLE " + _tbl + " ADD COLUMN bet_limit REAL")
+            except Exception:
+                pass
 
         c.execute("""CREATE TABLE IF NOT EXISTS api_usage (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
