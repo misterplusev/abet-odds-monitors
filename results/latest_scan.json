@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-10-20T15:49:54.561690+00:00",
+ "scanned_at": "2026-10-20T15:51:56.556368+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 32.6,
+ "loop_uptime_min": 34.6,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 158542,
+   "markets": 164962,
    "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7998,
-   "last_tick_age_s": 0.1
+   "last_tick_age_s": 0.5
   },
   {
    "venue": "pmglobal",
@@ -36,38 +36,38 @@
   }
  ],
  "totals": {
-  "markets_tracked": 166648,
+  "markets_tracked": 173068,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 14,
-  "gist_errors": 35,
+  "commits": 15,
+  "gist_errors": 37,
   "hot_errors": 0,
   "kalshi.rest_updates": 5,
-  "kalshi.sweeps": 176,
-  "kalshi.ticks": 2260928,
-  "kalshi.updates": 1306360,
-  "kalshi.ws_ticks": 2260916,
-  "kalshi.ws_trades": 333097,
-  "novig.sweep_errors": 175,
-  "pmglobal.rest_updates": 1451,
-  "pmglobal.sweeps": 175,
-  "pmglobal.ticks": 21607,
-  "pmglobal.updates": 3026,
-  "pmglobal.ws_msgs": 747618,
-  "pmglobal.ws_ticks": 4007,
-  "pmus.rest_updates": 9639,
-  "pmus.sweeps": 176,
-  "pmus.ticks": 1415646,
-  "pmus.updates": 9639,
+  "kalshi.sweeps": 187,
+  "kalshi.ticks": 2402645,
+  "kalshi.updates": 1389313,
+  "kalshi.ws_ticks": 2402633,
+  "kalshi.ws_trades": 351851,
+  "novig.sweep_errors": 186,
+  "pmglobal.rest_updates": 1518,
+  "pmglobal.sweeps": 186,
+  "pmglobal.ticks": 22922,
+  "pmglobal.updates": 3161,
+  "pmglobal.ws_msgs": 779744,
+  "pmglobal.ws_ticks": 4222,
+  "pmus.rest_updates": 9754,
+  "pmus.sweeps": 187,
+  "pmus.ticks": 1503624,
+  "pmus.updates": 9754,
   "pmus_x.last_count": 7998,
-  "pmus_x.sweeps": 177,
-  "prophetx.ws_errors": 117,
+  "pmus_x.sweeps": 188,
+  "prophetx.ws_errors": 125,
   "push_fails": 1,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 175,
-  "supa_errors": 550
+  "pxboard.sweeps": 186,
+  "supa_errors": 583
  },
  "arbitrages": []
 }
