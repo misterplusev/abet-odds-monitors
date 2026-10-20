@@ -78,9 +78,9 @@ jobs:
           ODDS_API_KEY_8: ${{ secrets.ODDS_API_KEY_8 }}
           ODDS_API_KEY_9: ${{ secrets.ODDS_API_KEY_9 }}
           ODDS_API_KEY_10: ${{ secrets.ODDS_API_KEY_10 }}
-          DISCORD_WEBHOOK_NFL_MONEYLINE: ${{ secrets.DISCORD_WEBHOOK_NFL_MONEYLINE }}
-          DISCORD_WEBHOOK_NFL_SPREADS: ${{ secrets.DISCORD_WEBHOOK_NFL_SPREADS }}
-          DISCORD_WEBHOOK_NFL_TOTALS: ${{ secrets.DISCORD_WEBHOOK_NFL_TOTALS }}
+          DISCORD_WEBHOOK_NFL_ODDS_MONEYLINES: ${{ secrets.DISCORD_WEBHOOK_NFL_ODDS_MONEYLINES }}
+          DISCORD_WEBHOOK_NFL_ODDS_SPREADS: ${{ secrets.DISCORD_WEBHOOK_NFL_ODDS_SPREADS }}
+          DISCORD_WEBHOOK_NFL_ODDS_TOTALS: ${{ secrets.DISCORD_WEBHOOK_NFL_ODDS_TOTALS }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           # ---- DURABLE ODDS HISTORY (new) -------------------------------

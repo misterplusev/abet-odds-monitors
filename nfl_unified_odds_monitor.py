@@ -268,9 +268,9 @@ _fh.setFormatter(_logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s',
 _file_logger.addHandler(_fh)
 
 # Discord Webhooks — from environment (discordapp.com domain for HF compatibility)
-DISCORD_WEBHOOK_MONEYLINE = os.environ.get("DISCORD_WEBHOOK_NFL_MONEYLINE", "")
-DISCORD_WEBHOOK_SPREADS   = os.environ.get("DISCORD_WEBHOOK_NFL_SPREADS", "")
-DISCORD_WEBHOOK_TOTALS    = os.environ.get("DISCORD_WEBHOOK_NFL_TOTALS", "")
+DISCORD_WEBHOOK_MONEYLINE = os.environ.get("DISCORD_WEBHOOK_NFL_ODDS_MONEYLINES", "")
+DISCORD_WEBHOOK_SPREADS   = os.environ.get("DISCORD_WEBHOOK_NFL_ODDS_SPREADS", "")
+DISCORD_WEBHOOK_TOTALS    = os.environ.get("DISCORD_WEBHOOK_NFL_ODDS_TOTALS", "")
 
 # TheOddsAPI — 9 keys loaded from environment for rotation.
 # NOTE: shares the SAME key pool as the MLB suite (ODDS_API_KEY_1..9, MLB
@@ -309,6 +309,11 @@ else:
 SPORT_KEY = SPORT_KEYS[0]  # Primary (used for logging)
 API_URL_BASE = "https://api.the-odds-api.com/v4/sports"
 REGIONS = 'us'
+
+# STANDARD 10 BOOKMAKERS (operator decision 2026-10-19)
+BOOKMAKERS = ('draftkings,fanduel,betmgm,betrivers,pinnacle,'
+              'novig,kalshi,polymarket_us,prophetx,betopenly')
+
 MARKETS = 'h2h,spreads,totals'
 
 # Feature flags
@@ -830,9 +835,9 @@ def post_chart_to_discord(chart_path: Path, title: str, webhook_url: str,
                 log_ok(f"Posted: {chart_path.name}")
                 # Determine channel from webhook URL
                 channel = "#nfl-moneylines"
-                if webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_SPREADS", ""):
+                if webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_ODDS_SPREADS", ""):
                     channel = "#nfl-spreads"
-                elif webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_TOTALS", ""):
+                elif webhook_url == os.getenv("DISCORD_WEBHOOK_NFL_ODDS_TOTALS", ""):
                     channel = "#nfl-totals"
                 _post_receipt("chart", channel, chart_path.name)
                 try:
@@ -883,7 +888,7 @@ def _log_api_usage(key_id: str, credits_used: int, credits_remaining: int,
                 credits_remaining=credits_remaining,
                 games_count=games_count,
                 bookmakers_count=bookmakers_count,
-                regions=REGIONS,
+                bookmakers=BOOKMAKERS,
                 sport_key=sport_key,
             )
         except Exception as e:
@@ -911,7 +916,7 @@ def fetch_odds(api_mgr: APIKeyManager) -> Tuple[Optional[list], Optional[int]]:
                 url = f"{API_URL_BASE}/{sport_key}/odds"
                 params = {
                     'apiKey': api_key,
-                    'regions': REGIONS,
+                    'bookmakers': BOOKMAKERS,
                     'markets': MARKETS,
                     'oddsFormat': 'decimal',
                     'dateFormat': 'iso',
@@ -969,7 +974,7 @@ def fetch_odds(api_mgr: APIKeyManager) -> Tuple[Optional[list], Optional[int]]:
                         'sport_key': sport_key,
                         'credits_remaining': credits_remaining,
                         'credits_used': credits_used,
-                        'regions': REGIONS,
+                        'bookmakers': BOOKMAKERS,
                         'total_games': len(data),
                         'live_games': live_games,
                         'unique_bookmakers': sorted(list(bookmaker_set)),
@@ -1327,15 +1332,19 @@ def _plot_book_lines(ax, book_df, avg_df):
     ax.yaxis.set_label_position('right')
     ax.set_ylabel('American Odds', fontsize=10, color='#CCCCCC')
 
-    # Y-axis range for limits (left)
+    # Y-axis range for limits (left) - LOG scale.
     if ax_limits is not None:
-        all_pts = list(book_df['bet_limit'].dropna()) if not book_df.empty and 'bet_limit' in book_df.columns else []
+        all_pts = [p for p in (book_df['bet_limit'].dropna() if not book_df.empty and 'bet_limit' in book_df.columns else []) if p > 0]
         if all_pts:
             pmin, pmax = min(all_pts), max(all_pts)
-            ppad = abs(pmax - pmin) * 0.15 or 0.5
-            ax_limits.set_ylim(pmin - ppad, pmax + ppad)
-            ax_limits.set_ylabel('Line / Limit', fontsize=10, color='#CCCCCC')
+            if pmin == pmax:
+                pmin, pmax = pmin * 0.5, pmax * 2.0
+            ax_limits.set_yscale('log')
+            ax_limits.set_ylim(pmin / 2.5, pmax * 2.5)
+            ax_limits.set_ylabel('Bet Limit (USD, log)', fontsize=10, color='#CCCCCC')
             ax_limits.tick_params(axis='y', labelcolor='#CCCCCC')
+            ax_limits.yaxis.set_major_formatter(__import__('matplotlib').ticker.FuncFormatter(
+                lambda v, pos: ('$' + format(int(v), ',d')) if v >= 1 else ''))
         else:
             ax_limits.set_visible(False)
 
