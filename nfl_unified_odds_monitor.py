@@ -1670,7 +1670,8 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
         games = pd.read_sql_query("""
             SELECT DISTINCT g.game_id, g.home_team, g.away_team, g.commence_time
             FROM games g JOIN odds_history oh ON g.game_id = oh.game_id
-            WHERE g.last_update = (SELECT MAX(last_update) FROM games)
+            WHERE g.last_update = (SELECT MAX(last_update) FROM games WHERE sport_key='americanfootball_nfl')
+            AND g.sport_key='americanfootball_nfl'
             AND oh.market_key='h2h' AND oh.bookmaker_key != '_average'
             GROUP BY g.game_id ORDER BY g.commence_time
         """, conn)
@@ -1748,7 +1749,8 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
             FROM games g
             JOIN odds_history oh1 ON g.game_id=oh1.game_id AND oh1.outcome_name=g.home_team
             JOIN odds_history oh2 ON g.game_id=oh2.game_id AND oh2.outcome_name=g.away_team
-            WHERE g.last_update=(SELECT MAX(last_update) FROM games)
+            WHERE g.last_update=(SELECT MAX(last_update) FROM games WHERE sport_key='americanfootball_nfl')
+            AND g.sport_key='americanfootball_nfl'
             AND oh1.market_key='spreads' AND oh2.market_key='spreads'
             AND oh1.created_at=oh2.created_at AND oh1.bookmaker_key=oh2.bookmaker_key
             AND oh1.bookmaker_key!='_average'
@@ -1832,7 +1834,8 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
             SELECT DISTINCT g.game_id, g.home_team, g.away_team, g.commence_time,
                 oh.point as total_line
             FROM games g JOIN odds_history oh ON g.game_id=oh.game_id
-            WHERE g.last_update=(SELECT MAX(last_update) FROM games)
+            WHERE g.last_update=(SELECT MAX(last_update) FROM games WHERE sport_key='americanfootball_nfl')
+            AND g.sport_key='americanfootball_nfl'
             AND oh.market_key='totals' AND oh.bookmaker_key!='_average'
             GROUP BY g.game_id, oh.point
             ORDER BY g.commence_time, oh.point
@@ -1918,7 +1921,7 @@ def snapshot_odds_history() -> bool:
         c = conn.cursor()
         games = c.execute(
             "SELECT game_id, sport_key, commence_time, home_team, away_team, "
-            "last_update FROM games").fetchall()
+            "last_update FROM games WHERE sport_key='americanfootball_nfl').fetchall()
         hist = c.execute(
             "SELECT game_id, fetch_timestamp, bookmaker_key, bookmaker_title, "
             "market_key, outcome_name, price_decimal, price_american, point, "
