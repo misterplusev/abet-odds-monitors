@@ -1931,7 +1931,7 @@ def snapshot_odds_history() -> bool:
         c = conn.cursor()
         games = c.execute(
             "SELECT game_id, sport_key, commence_time, home_team, away_team, "
-            "last_update FROM games WHERE sport_key='americanfootball_nfl').fetchall()
+            "last_update FROM games WHERE sport_key='americanfootball_nfl'").fetchall()
         hist = c.execute(
             "SELECT game_id, fetch_timestamp, bookmaker_key, bookmaker_title, "
             "market_key, outcome_name, price_decimal, price_american, point, "
