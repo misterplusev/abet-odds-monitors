@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-10-20T16:06:23.776911+00:00",
+ "scanned_at": "2026-10-20T16:08:26.026693+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 49.1,
+ "loop_uptime_min": 51.1,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 216713,
+   "markets": 223894,
    "last_tick_age_s": 0.1
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7998,
-   "last_tick_age_s": 0.1
+   "last_tick_age_s": 0.7
   },
   {
    "venue": "pmglobal",
@@ -36,38 +36,38 @@
   }
  ],
  "totals": {
-  "markets_tracked": 224823,
+  "markets_tracked": 232004,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 22,
-  "gist_errors": 52,
+  "commits": 23,
+  "gist_errors": 54,
   "hot_errors": 0,
   "kalshi.rest_updates": 5,
-  "kalshi.sweeps": 264,
-  "kalshi.ticks": 3423214,
-  "kalshi.updates": 1982700,
-  "kalshi.ws_ticks": 3423202,
-  "kalshi.ws_trades": 506338,
-  "novig.sweep_errors": 263,
-  "pmglobal.rest_updates": 2022,
-  "pmglobal.sweeps": 263,
-  "pmglobal.ticks": 32145,
-  "pmglobal.updates": 4180,
-  "pmglobal.ws_msgs": 914607,
-  "pmglobal.ws_ticks": 5745,
-  "pmus.rest_updates": 10403,
-  "pmus.sweeps": 264,
-  "pmus.ticks": 2119470,
-  "pmus.updates": 10403,
+  "kalshi.sweeps": 275,
+  "kalshi.ticks": 3574436,
+  "kalshi.updates": 2071377,
+  "kalshi.ws_ticks": 3574424,
+  "kalshi.ws_trades": 524395,
+  "novig.sweep_errors": 274,
+  "pmglobal.rest_updates": 2080,
+  "pmglobal.sweeps": 274,
+  "pmglobal.ticks": 33452,
+  "pmglobal.updates": 4311,
+  "pmglobal.ws_msgs": 934168,
+  "pmglobal.ws_ticks": 5952,
+  "pmus.rest_updates": 10466,
+  "pmus.sweeps": 275,
+  "pmus.ticks": 2207448,
+  "pmus.updates": 10466,
   "pmus_x.last_count": 7998,
-  "pmus_x.sweeps": 265,
-  "prophetx.ws_errors": 176,
+  "pmus_x.sweeps": 276,
+  "prophetx.ws_errors": 183,
   "push_fails": 1,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 263,
-  "supa_errors": 814
+  "pxboard.sweeps": 274,
+  "supa_errors": 847
  },
  "arbitrages": []
 }
