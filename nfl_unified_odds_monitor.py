@@ -2099,6 +2099,14 @@ def run_iteration() -> int:
                 restored += 1
         except Exception:
             pass
+        # Re-backfill created_at after durable load (durable DB may have NULL created_at)
+        try:
+            _c = sqlite3.connect(DB_PATH)
+            _c.execute("UPDATE odds_history SET created_at = fetch_timestamp WHERE created_at IS NULL")
+            _c.commit()
+            _c.close()
+        except Exception:
+            pass
         restored += restore_odds_history()
         if not restored:
             log_warn("No prior odds history restored — charts this run will show "
