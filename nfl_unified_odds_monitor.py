@@ -310,7 +310,10 @@ SPORT_KEY = SPORT_KEYS[0]  # Primary (used for logging)
 API_URL_BASE = "https://api.the-odds-api.com/v4/sports"
 REGIONS = 'us'
 
-# STANDARD 10 BOOKMAKERS (operator decision 2026-10-19)
+# STANDARD 10 BOOKMAKERS (operator decision 2026-10-19) - 1 region-equivalent cost.
+# 4 US softbooks for movement + Pinnacle (sharp) + 5 US exchanges (kalshi/novig/
+# polymarket_us/prophetx/betopenly) which are the ONLY US-source carriers of bet_limit.
+# Every 10 bookmakers = 1 region equivalent, so this costs the same as regions='us'.
 BOOKMAKERS = ('draftkings,fanduel,betmgm,betrivers,pinnacle,'
               'novig,kalshi,polymarket_us,prophetx,betopenly')
 
@@ -362,6 +365,8 @@ BOOKMAKER_COLORS = {
     'espnbet': '#F5342E', 'hardrockbet': '#C7A86B', 'betus': '#006400',
     'lowvig': '#4B0082', 'fliff': '#00C4FF', 'windcreek': '#7CB342',
     'underdog': '#FF9800',
+    'novig': '#00CED1', 'kalshi': '#2E8B57',
+    'polymarket_us': '#8A2BE2', 'prophetx': '#DC143C', 'betopenly': '#FFD700',
 }
 
 # Configure requests session with User-Agent (required for Discord from HF)
@@ -888,7 +893,7 @@ def _log_api_usage(key_id: str, credits_used: int, credits_remaining: int,
                 credits_remaining=credits_remaining,
                 games_count=games_count,
                 bookmakers_count=bookmakers_count,
-                bookmakers=BOOKMAKERS,
+                regions=REGIONS,
                 sport_key=sport_key,
             )
         except Exception as e:
@@ -1300,7 +1305,7 @@ def _plot_book_lines(ax, book_df, avg_df):
 
         for bk in book_df['bookmaker_key'].unique():
             bd = book_df[book_df['bookmaker_key'] == bk].sort_values('created_at')
-            clr = get_bookmaker_colors().get(bk, '#888888')
+            clr = BOOKMAKER_COLORS.get(bk, '#888888')
             if len(bd) > 1:
                 ax.plot(bd['created_at'], bd['price_decimal'],
                         label=bd['bookmaker_title'].iloc[0], color=clr,
@@ -1316,7 +1321,7 @@ def _plot_book_lines(ax, book_df, avg_df):
                 pts = bd.dropna(subset=['bet_limit'])
                 if not pts.empty and pts['bet_limit'].notna().any():
                     ax_limits.plot(pts['created_at'], pts['bet_limit'],
-                                   color=clr, linestyle=':', linewidth=1.5, alpha=0.7, zorder=8)
+                                   color=clr, linestyle='--', linewidth=2.0, alpha=0.85, zorder=8)
 
     # Y-axis range for odds (right)
     all_dec = list(book_df['price_decimal']) if not book_df.empty else []
@@ -1333,6 +1338,7 @@ def _plot_book_lines(ax, book_df, avg_df):
     ax.set_ylabel('American Odds', fontsize=10, color='#CCCCCC')
 
     # Y-axis range for limits (left) - LOG scale.
+    # bet_limit spans $1 (prophetx) to >$2,700,000 (kalshi). Linear crushes everything.
     if ax_limits is not None:
         all_pts = [p for p in (book_df['bet_limit'].dropna() if not book_df.empty and 'bet_limit' in book_df.columns else []) if p > 0]
         if all_pts:
