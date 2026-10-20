@@ -719,6 +719,16 @@ def setup_database() -> bool:
                 c.execute("ALTER TABLE " + _tbl + " ADD COLUMN bet_limit REAL")
             except Exception:
                 pass
+        # Migrate: add created_at column if missing (existing DBs)
+        try:
+            c.execute("ALTER TABLE odds_history ADD COLUMN created_at TEXT DEFAULT (datetime('now'))")
+        except Exception:
+            pass
+        # Backfill created_at for existing rows where it is NULL
+        try:
+            c.execute("UPDATE odds_history SET created_at = fetch_timestamp WHERE created_at IS NULL")
+        except Exception:
+            pass
 
         c.execute("""CREATE TABLE IF NOT EXISTS api_usage (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1075,9 +1085,9 @@ def store_odds(data: list) -> int:
                         # History
                         c.execute("""INSERT INTO odds_history
                             (game_id,fetch_timestamp,bookmaker_key,bookmaker_title,
-                             market_key,outcome_name,price_decimal,price_american,point,bet_limit,is_live_game)
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-                            (gid, ts, bk, bt, mk, on, pd_val, pa, pt, bl, is_live))
+                             market_key,outcome_name,price_decimal,price_american,point,bet_limit,is_live_game,created_at)
+                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                            (gid, ts, bk, bt, mk, on, pd_val, pa, pt, bl, is_live, ts))
 
                         # Upsert current odds (use point_key for UNIQUE constraint)
                         pt_key = pt if pt is not None else -999999
@@ -1106,10 +1116,10 @@ def store_odds(data: list) -> int:
                 avg_dec = american_to_decimal(avg_am)
                 c.execute("""INSERT INTO odds_history
                     (game_id,fetch_timestamp,bookmaker_key,bookmaker_title,
-                     market_key,outcome_name,price_decimal,price_american,point,is_live_game)
-                    VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                     market_key,outcome_name,price_decimal,price_american,point,is_live_game,created_at)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
                     (gid, ts, '_average', f'AVERAGE ({len(odds_list)} books)',
-                     'h2h', team, avg_dec, avg_am, None, live_map.get(gid, False)))
+                     'h2h', team, avg_dec, avg_am, None, live_map.get(gid, False), ts))
                 avg_count += 1
 
         for (gid, team, pt), odds_list in sp_coll.items():
@@ -1118,10 +1128,10 @@ def store_odds(data: list) -> int:
                 avg_dec = american_to_decimal(avg_am)
                 c.execute("""INSERT INTO odds_history
                     (game_id,fetch_timestamp,bookmaker_key,bookmaker_title,
-                     market_key,outcome_name,price_decimal,price_american,point,is_live_game)
-                    VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                     market_key,outcome_name,price_decimal,price_american,point,is_live_game,created_at)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
                     (gid, ts, '_average', f'AVERAGE ({len(odds_list)} books)',
-                     'spreads', team, avg_dec, avg_am, pt, live_map.get(gid, False)))
+                     'spreads', team, avg_dec, avg_am, pt, live_map.get(gid, False), ts))
                 avg_count += 1
 
         for (gid, pt), sides in to_coll.items():
@@ -1135,7 +1145,7 @@ def store_odds(data: list) -> int:
                          market_key,outcome_name,price_decimal,price_american,point,is_live_game)
                         VALUES (?,?,?,?,?,?,?,?,?,?)""",
                         (gid, ts, '_average', f'AVERAGE ({len(odds_list)} books)',
-                         'totals', side_name, avg_dec, avg_am, pt, live_map.get(gid, False)))
+                         'totals', side_name, avg_dec, avg_am, pt, live_map.get(gid, False), ts))
                     avg_count += 1
 
         conn.commit()
