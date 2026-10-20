@@ -1706,7 +1706,7 @@ def generate_moneyline_charts() -> List[Tuple[Path, dict]]:
                 _plot_book_lines(ax, bdf, adf)
                 _add_odds_header(ax, bdf, adf, label=f'{abbreviate_team(team)} MONEYLINE')
                 if ax == ax1 and not bdf.empty:
-                    leg = ax.legend(loc='upper left', fontsize=8, ncol=2,
+                    leg = ax.legend(loc='upper left', fontsize=7, ncol=3,
                                     facecolor='#1A1F2E', edgecolor='#4A5568', framealpha=0.9)
                     if leg:
                         for t in leg.get_texts():
@@ -1791,7 +1791,7 @@ def generate_spread_charts() -> List[Tuple[Path, dict]]:
                 sp_txt = f"+{spread}" if spread > 0 else str(spread)
                 _add_odds_header(ax, bdf, adf, prefix=f"SPREAD: {sp_txt}", label=f'{abbreviate_team(team)} SPREAD')
                 if ax == ax1 and not bdf.empty:
-                    leg = ax.legend(loc='upper left', fontsize=8, ncol=2,
+                    leg = ax.legend(loc='upper left', fontsize=7, ncol=3,
                                     facecolor='#1A1F2E', edgecolor='#4A5568', framealpha=0.9)
                     if leg:
                         for t in leg.get_texts():
@@ -1872,7 +1872,7 @@ def generate_totals_charts() -> List[Tuple[Path, dict]]:
                 _plot_book_lines(ax, bdf, adf)
                 _add_odds_header(ax, bdf, adf, prefix=f"TOTAL: {total}", label=f'{outcome} TOTAL')
                 if ax == ax1 and not bdf.empty:
-                    leg = ax.legend(loc='upper left', fontsize=8, ncol=2,
+                    leg = ax.legend(loc='upper left', fontsize=7, ncol=3,
                                     facecolor='#1A1F2E', edgecolor='#4A5568', framealpha=0.9)
                     if leg:
                         for t in leg.get_texts():
