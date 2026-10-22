@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-10-22T15:32:57.370230+00:00",
+ "scanned_at": "2026-10-22T15:34:59.751126+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 2.2,
+ "loop_uptime_min": 4.3,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 28944,
+   "markets": 44165,
    "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7998,
-   "last_tick_age_s": 0.2
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "pmglobal",
@@ -36,35 +36,36 @@
   }
  ],
  "totals": {
-  "markets_tracked": 37042,
+  "markets_tracked": 52263,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "gist_errors": 3,
+  "commits": 1,
+  "gist_errors": 5,
   "hot_errors": 0,
-  "kalshi.sweeps": 11,
-  "kalshi.ticks": 166226,
-  "kalshi.updates": 108086,
-  "kalshi.ws_ticks": 166226,
-  "kalshi.ws_trades": 20693,
-  "novig.sweep_errors": 10,
-  "pmglobal.rest_updates": 271,
-  "pmglobal.sweeps": 10,
-  "pmglobal.ticks": 1611,
-  "pmglobal.updates": 524,
-  "pmglobal.ws_msgs": 71163,
-  "pmglobal.ws_ticks": 511,
-  "pmus.rest_updates": 8375,
-  "pmus.sweeps": 11,
-  "pmus.ticks": 95976,
-  "pmus.updates": 8375,
+  "kalshi.sweeps": 21,
+  "kalshi.ticks": 343915,
+  "kalshi.updates": 216711,
+  "kalshi.ws_ticks": 343915,
+  "kalshi.ws_trades": 41232,
+  "novig.sweep_errors": 20,
+  "pmglobal.rest_updates": 373,
+  "pmglobal.sweeps": 20,
+  "pmglobal.ticks": 3184,
+  "pmglobal.updates": 887,
+  "pmglobal.ws_msgs": 197047,
+  "pmglobal.ws_ticks": 1084,
+  "pmus.rest_updates": 8789,
+  "pmus.sweeps": 21,
+  "pmus.ticks": 175956,
+  "pmus.updates": 8789,
   "pmus_x.last_count": 7998,
-  "pmus_x.sweeps": 12,
-  "prophetx.ws_errors": 7,
+  "pmus_x.sweeps": 22,
+  "prophetx.ws_errors": 14,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 10,
-  "supa_errors": 41
+  "pxboard.sweeps": 20,
+  "supa_errors": 81
  },
  "arbitrages": []
 }
