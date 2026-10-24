@@ -1,13 +1,13 @@
 {
- "scanned_at": "2026-10-24T10:42:18.966453+00:00",
+ "scanned_at": "2026-10-24T10:44:30.111231+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 57.8,
+ "loop_uptime_min": 60.0,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 83270,
+   "markets": 85057,
    "last_tick_age_s": 0.0
   },
   {
@@ -20,7 +20,7 @@
    "venue": "pmglobal",
    "state": "OK",
    "markets": 113,
-   "last_tick_age_s": 0.0
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "novig",
@@ -36,37 +36,37 @@
   }
  ],
  "totals": {
-  "markets_tracked": 91381,
+  "markets_tracked": 93168,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 27,
-  "gist_errors": 55,
+  "commits": 28,
+  "gist_errors": 57,
   "hot_errors": 0,
-  "kalshi.sweeps": 309,
-  "kalshi.ticks": 1679632,
-  "kalshi.updates": 712206,
-  "kalshi.ws_ticks": 1679632,
-  "kalshi.ws_trades": 298294,
-  "novig.sweep_errors": 308,
-  "pmglobal.rest_updates": 2796,
-  "pmglobal.sweeps": 308,
-  "pmglobal.ticks": 40889,
-  "pmglobal.updates": 6761,
+  "kalshi.sweeps": 321,
+  "kalshi.ticks": 1746038,
+  "kalshi.updates": 737345,
+  "kalshi.ws_ticks": 1746038,
+  "kalshi.ws_trades": 308060,
+  "novig.sweep_errors": 320,
+  "pmglobal.rest_updates": 2879,
+  "pmglobal.sweeps": 320,
+  "pmglobal.ticks": 42371,
+  "pmglobal.updates": 6928,
   "pmglobal.ws_errors": 1,
-  "pmglobal.ws_msgs": 1600411,
-  "pmglobal.ws_ticks": 9989,
-  "pmus.rest_updates": 15532,
-  "pmus.sweeps": 309,
-  "pmus.ticks": 2479380,
-  "pmus.updates": 15532,
+  "pmglobal.ws_msgs": 1627522,
+  "pmglobal.ws_ticks": 10271,
+  "pmus.rest_updates": 16014,
+  "pmus.sweeps": 321,
+  "pmus.ticks": 2575356,
+  "pmus.updates": 16014,
   "pmus_x.last_count": 7998,
-  "pmus_x.sweeps": 310,
-  "prophetx.ws_errors": 206,
+  "pmus_x.sweeps": 322,
+  "prophetx.ws_errors": 214,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 308,
-  "supa_errors": 954
+  "pxboard.sweeps": 320,
+  "supa_errors": 991
  },
  "arbitrages": []
 }
