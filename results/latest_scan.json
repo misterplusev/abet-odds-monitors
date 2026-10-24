@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-10-24T18:40:58.855288+00:00",
+ "scanned_at": "2026-10-24T18:43:07.126669+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 22.7,
+ "loop_uptime_min": 24.8,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 200813,
-   "last_tick_age_s": 0.0
+   "markets": 214198,
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7998,
-   "last_tick_age_s": 0.1
+   "last_tick_age_s": 0.5
   },
   {
    "venue": "pmglobal",
@@ -36,37 +36,37 @@
   }
  ],
  "totals": {
-  "markets_tracked": 208918,
+  "markets_tracked": 222303,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 10,
-  "gist_errors": 24,
+  "commits": 11,
+  "gist_errors": 26,
   "hot_errors": 0,
-  "kalshi.sweeps": 120,
-  "kalshi.ticks": 2545747,
-  "kalshi.updates": 1514803,
-  "kalshi.ws_ticks": 2545747,
-  "kalshi.ws_trades": 388116,
-  "novig.sweep_errors": 119,
-  "pmglobal.rest_updates": 1785,
-  "pmglobal.sweeps": 119,
-  "pmglobal.ticks": 18732,
-  "pmglobal.updates": 4389,
+  "kalshi.sweeps": 131,
+  "kalshi.ticks": 2762983,
+  "kalshi.updates": 1643046,
+  "kalshi.ws_ticks": 2762983,
+  "kalshi.ws_trades": 424596,
+  "novig.sweep_errors": 130,
+  "pmglobal.rest_updates": 1911,
+  "pmglobal.sweeps": 130,
+  "pmglobal.ticks": 20406,
+  "pmglobal.updates": 4710,
   "pmglobal.ws_errors": 1,
-  "pmglobal.ws_msgs": 915625,
-  "pmglobal.ws_ticks": 6732,
-  "pmus.rest_updates": 9160,
-  "pmus.sweeps": 120,
-  "pmus.ticks": 967758,
-  "pmus.updates": 9160,
+  "pmglobal.ws_msgs": 980296,
+  "pmglobal.ws_ticks": 7306,
+  "pmus.rest_updates": 9285,
+  "pmus.sweeps": 131,
+  "pmus.ticks": 1055736,
+  "pmus.updates": 9285,
   "pmus_x.last_count": 7998,
-  "pmus_x.sweeps": 121,
-  "prophetx.ws_errors": 80,
+  "pmus_x.sweeps": 132,
+  "prophetx.ws_errors": 87,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 119,
-  "supa_errors": 390
+  "pxboard.sweeps": 130,
+  "supa_errors": 425
  },
  "arbitrages": []
 }
