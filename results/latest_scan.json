@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-10-29T17:13:54.522815+00:00",
+ "scanned_at": "2026-10-29T17:15:55.635213+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 12.5,
+ "loop_uptime_min": 14.5,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 81517,
+   "markets": 91184,
    "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7834,
-   "last_tick_age_s": 0.1
+   "last_tick_age_s": 0.3
   },
   {
    "venue": "pmglobal",
@@ -36,37 +36,37 @@
   }
  ],
  "totals": {
-  "markets_tracked": 89458,
+  "markets_tracked": 99125,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 5,
-  "gist_errors": 13,
+  "commits": 6,
+  "gist_errors": 16,
   "hot_errors": 0,
-  "kalshi.sweeps": 81,
-  "kalshi.ticks": 859443,
-  "kalshi.updates": 530577,
-  "kalshi.ws_ticks": 859443,
-  "kalshi.ws_trades": 142482,
-  "novig.sweep_errors": 80,
-  "pairs_blocked_antonym_date": 3535,
-  "pmglobal.rest_updates": 861,
-  "pmglobal.sweeps": 80,
-  "pmglobal.ticks": 10166,
-  "pmglobal.updates": 1746,
-  "pmglobal.ws_msgs": 396082,
-  "pmglobal.ws_ticks": 2066,
-  "pmus.rest_updates": 8964,
-  "pmus.sweeps": 81,
-  "pmus.ticks": 642309,
-  "pmus.updates": 8964,
+  "kalshi.sweeps": 95,
+  "kalshi.ticks": 1017944,
+  "kalshi.updates": 622933,
+  "kalshi.ws_ticks": 1017944,
+  "kalshi.ws_trades": 168752,
+  "novig.sweep_errors": 94,
+  "pairs_blocked_antonym_date": 4165,
+  "pmglobal.rest_updates": 985,
+  "pmglobal.sweeps": 94,
+  "pmglobal.ticks": 11948,
+  "pmglobal.updates": 2039,
+  "pmglobal.ws_msgs": 484905,
+  "pmglobal.ws_ticks": 2448,
+  "pmus.rest_updates": 9101,
+  "pmus.sweeps": 95,
+  "pmus.ticks": 751971,
+  "pmus.updates": 9101,
   "pmus_x.last_count": 7833,
-  "pmus_x.sweeps": 82,
-  "prophetx.ws_errors": 42,
+  "pmus_x.sweeps": 96,
+  "prophetx.ws_errors": 49,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 80,
-  "supa_errors": 241
+  "pxboard.sweeps": 94,
+  "supa_errors": 283
  },
  "arbitrages": []
 }
