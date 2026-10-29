@@ -1,13 +1,13 @@
 {
- "scanned_at": "2026-10-29T00:42:49.641371+00:00",
+ "scanned_at": "2026-10-29T00:44:51.467472+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 30.4,
+ "loop_uptime_min": 32.5,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 142004,
+   "markets": 149133,
    "last_tick_age_s": 0.0
   },
   {
@@ -20,7 +20,7 @@
    "venue": "pmglobal",
    "state": "OK",
    "markets": 109,
-   "last_tick_age_s": 0.1
+   "last_tick_age_s": 0.3
   },
   {
    "venue": "novig",
@@ -36,37 +36,38 @@
   }
  ],
  "totals": {
-  "markets_tracked": 149879,
+  "markets_tracked": 157008,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 14,
-  "gist_errors": 32,
+  "commits": 15,
+  "gist_errors": 34,
   "hot_errors": 0,
-  "kalshi.sweeps": 191,
-  "kalshi.ticks": 3273721,
-  "kalshi.updates": 1923981,
-  "kalshi.ws_ticks": 3273721,
-  "kalshi.ws_trades": 481554,
-  "novig.sweep_errors": 191,
-  "pmglobal.rest_updates": 2350,
-  "pmglobal.sweeps": 191,
-  "pmglobal.ticks": 26731,
-  "pmglobal.updates": 5634,
+  "kalshi.rest_updates": 6,
+  "kalshi.sweeps": 203,
+  "kalshi.ticks": 3484042,
+  "kalshi.updates": 2045120,
+  "kalshi.ws_ticks": 3484027,
+  "kalshi.ws_trades": 530348,
+  "novig.sweep_errors": 203,
+  "pmglobal.rest_updates": 2508,
+  "pmglobal.sweeps": 203,
+  "pmglobal.ticks": 28369,
+  "pmglobal.updates": 5982,
   "pmglobal.ws_errors": 1,
-  "pmglobal.ws_msgs": 1645713,
-  "pmglobal.ws_ticks": 7531,
-  "pmus.rest_updates": 9400,
-  "pmus.sweeps": 191,
-  "pmus.ticks": 1489933,
-  "pmus.updates": 9400,
+  "pmglobal.ws_msgs": 1750983,
+  "pmglobal.ws_ticks": 7969,
+  "pmus.rest_updates": 9560,
+  "pmus.sweeps": 203,
+  "pmus.ticks": 1583005,
+  "pmus.updates": 9560,
   "pmus_x.last_count": 7756,
-  "pmus_x.sweeps": 192,
-  "prophetx.ws_errors": 108,
+  "pmus_x.sweeps": 204,
+  "prophetx.ws_errors": 115,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 191,
-  "supa_errors": 575
+  "pxboard.sweeps": 203,
+  "supa_errors": 612
  },
  "arbitrages": []
 }
