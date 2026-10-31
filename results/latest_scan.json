@@ -1,26 +1,26 @@
 {
- "scanned_at": "2026-10-31T21:23:57.917230+00:00",
+ "scanned_at": "2026-10-31T23:34:38.753289+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 334.9,
+ "loop_uptime_min": 2.0,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 1648260,
-   "last_tick_age_s": 0.4
+   "markets": 25944,
+   "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7971,
-   "last_tick_age_s": 7.6
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "pmglobal",
    "state": "OK",
-   "markets": 209,
-   "last_tick_age_s": 1.2
+   "markets": 100,
+   "last_tick_age_s": 0.0
   },
   {
    "venue": "novig",
@@ -36,37 +36,60 @@
   }
  ],
  "totals": {
-  "markets_tracked": 1656440,
-  "pairs_married": 0,
-  "arbitrages": 0
+  "markets_tracked": 34015,
+  "pairs_married": 1,
+  "arbitrages": 1
  },
  "stats": {
-  "commits": 163,
-  "gist_errors": 347,
+  "gist_errors": 3,
   "hot_errors": 0,
-  "kalshi.rest_updates": 7,
-  "kalshi.sweeps": 1676,
-  "kalshi.ticks": 39771732,
-  "kalshi.updates": 24683755,
-  "kalshi.ws_ticks": 39771724,
-  "kalshi.ws_trades": 5566986,
-  "novig.sweep_errors": 1676,
-  "pmglobal.rest_updates": 10209,
-  "pmglobal.sweeps": 1676,
-  "pmglobal.ticks": 204982,
-  "pmglobal.updates": 21277,
-  "pmglobal.ws_msgs": 3618797,
-  "pmglobal.ws_ticks": 37282,
-  "pmus.rest_updates": 30425,
-  "pmus.sweeps": 1676,
-  "pmus.ticks": 13321555,
-  "pmus.updates": 30425,
-  "pmus_x.last_count": 7960,
-  "pmus_x.sweeps": 1677,
-  "prophetx.ws_errors": 1139,
+  "kalshi.sweeps": 14,
+  "kalshi.ticks": 188665,
+  "kalshi.updates": 117914,
+  "kalshi.ws_ticks": 188665,
+  "kalshi.ws_trades": 32816,
+  "live_evals_fired": 2,
+  "novig.sweep_errors": 13,
+  "pmglobal.rest_updates": 294,
+  "pmglobal.sweeps": 13,
+  "pmglobal.ticks": 2031,
+  "pmglobal.updates": 587,
+  "pmglobal.ws_msgs": 112049,
+  "pmglobal.ws_ticks": 631,
+  "pmus.rest_updates": 8200,
+  "pmus.sweeps": 14,
+  "pmus.ticks": 119565,
+  "pmus.updates": 8200,
+  "pmus_x.last_count": 7971,
+  "pmus_x.sweeps": 15,
+  "prophetx.ws_errors": 8,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 1676,
-  "supa_errors": 5058
+  "pxboard.sweeps": 13,
+  "supa_errors": 40
  },
- "arbitrages": []
+ "arbitrages": [
+  {
+   "buy_yes": {
+    "venue": "pmus",
+    "key": [
+     "pmus",
+     "237388"
+    ],
+    "title": "Canelo Alvarez vs Christian Mbilli",
+    "ask_cents": 1
+   },
+   "buy_no": {
+    "venue": "pmglobal",
+    "key": [
+     "pmglobal",
+     "0xf46644ad77fa676c744182ffc14411942381c1245e3512386721a5ae28c8635d"
+    ],
+    "title": "Boxing: Canelo \u00c1lvarez vs. Christian Mbilli",
+    "no_cost_cents": 2
+   },
+   "total_cost_cents": 4,
+   "edge_bps": 9600,
+   "detected_at": "2026-10-31T23:32:49.199763+00:00"
+  }
+ ]
 }
