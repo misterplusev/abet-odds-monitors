@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-10-31T00:01:39.648054+00:00",
+ "scanned_at": "2026-10-31T00:03:40.767520+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 4.3,
+ "loop_uptime_min": 6.4,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 47270,
+   "markets": 60380,
    "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 7925,
-   "last_tick_age_s": 0.1
+   "last_tick_age_s": 2.4
   },
   {
    "venue": "pmglobal",
@@ -36,38 +36,38 @@
   }
  ],
  "totals": {
-  "markets_tracked": 55295,
+  "markets_tracked": 68405,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 1,
-  "gist_errors": 5,
+  "commits": 2,
+  "gist_errors": 7,
   "hot_errors": 0,
-  "kalshi.sweeps": 22,
-  "kalshi.ticks": 410736,
-  "kalshi.updates": 258365,
-  "kalshi.ws_ticks": 410736,
-  "kalshi.ws_trades": 91988,
-  "novig.sweep_errors": 21,
-  "pairs_blocked_antonym_date": 162,
-  "pmglobal.rest_updates": 577,
-  "pmglobal.sweeps": 21,
-  "pmglobal.ticks": 3483,
-  "pmglobal.updates": 1208,
+  "kalshi.sweeps": 33,
+  "kalshi.ticks": 616660,
+  "kalshi.updates": 380842,
+  "kalshi.ws_ticks": 616660,
+  "kalshi.ws_trades": 120871,
+  "novig.sweep_errors": 33,
+  "pairs_blocked_antonym_date": 252,
+  "pmglobal.rest_updates": 732,
+  "pmglobal.sweeps": 33,
+  "pmglobal.ticks": 5471,
+  "pmglobal.updates": 1569,
   "pmglobal.ws_errors": 2,
-  "pmglobal.ws_msgs": 219178,
-  "pmglobal.ws_ticks": 1283,
-  "pmus.rest_updates": 8178,
-  "pmus.sweeps": 22,
-  "pmus.ticks": 182252,
-  "pmus.updates": 8178,
+  "pmglobal.ws_msgs": 345430,
+  "pmglobal.ws_ticks": 2071,
+  "pmus.rest_updates": 8290,
+  "pmus.sweeps": 33,
+  "pmus.ticks": 269427,
+  "pmus.updates": 8290,
   "pmus_x.last_count": 7925,
-  "pmus_x.sweeps": 23,
-  "prophetx.ws_errors": 14,
+  "pmus_x.sweeps": 34,
+  "prophetx.ws_errors": 22,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 21,
-  "supa_errors": 81
+  "pxboard.sweeps": 32,
+  "supa_errors": 121
  },
  "arbitrages": []
 }
