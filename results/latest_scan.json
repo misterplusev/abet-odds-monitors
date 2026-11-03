@@ -1,26 +1,26 @@
 {
- "scanned_at": "2026-11-03T18:31:17.555394+00:00",
+ "scanned_at": "2026-11-03T21:13:46.608419+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 335.0,
+ "loop_uptime_min": 2.2,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 793061,
-   "last_tick_age_s": 0.1
+   "markets": 21464,
+   "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
-   "markets": 8189,
-   "last_tick_age_s": 5.7
+   "markets": 7958,
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "pmglobal",
    "state": "OK",
-   "markets": 141,
-   "last_tick_age_s": 0.6
+   "markets": 100,
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "novig",
@@ -36,37 +36,35 @@
   }
  ],
  "totals": {
-  "markets_tracked": 801391,
+  "markets_tracked": 29522,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 163,
-  "gist_errors": 345,
+  "gist_errors": 3,
   "hot_errors": 0,
-  "kalshi.rest_updates": 7,
-  "kalshi.sweeps": 1735,
-  "kalshi.ticks": 22872628,
-  "kalshi.updates": 13826081,
-  "kalshi.ws_ticks": 22872615,
-  "kalshi.ws_trades": 3463496,
-  "novig.sweep_errors": 1735,
-  "pmglobal.rest_updates": 11045,
-  "pmglobal.sweeps": 1735,
-  "pmglobal.ticks": 213753,
-  "pmglobal.updates": 22527,
-  "pmglobal.ws_msgs": 2138976,
-  "pmglobal.ws_ticks": 40153,
-  "pmus.rest_updates": 35448,
-  "pmus.sweeps": 1735,
-  "pmus.ticks": 13786184,
-  "pmus.updates": 35448,
+  "kalshi.sweeps": 14,
+  "kalshi.ticks": 121666,
+  "kalshi.updates": 67792,
+  "kalshi.ws_ticks": 121666,
+  "kalshi.ws_trades": 44480,
+  "novig.sweep_errors": 13,
+  "pmglobal.rest_updates": 294,
+  "pmglobal.sweeps": 13,
+  "pmglobal.ticks": 1915,
+  "pmglobal.updates": 545,
+  "pmglobal.ws_msgs": 55839,
+  "pmglobal.ws_ticks": 515,
+  "pmus.rest_updates": 8087,
+  "pmus.sweeps": 14,
+  "pmus.ticks": 119367,
+  "pmus.updates": 8087,
   "pmus_x.last_count": 7957,
-  "pmus_x.sweeps": 1736,
-  "prophetx.ws_errors": 1164,
+  "pmus_x.sweeps": 15,
+  "prophetx.ws_errors": 7,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 1735,
-  "supa_errors": 5492
+  "pxboard.sweeps": 13,
+  "supa_errors": 45
  },
  "arbitrages": []
 }
