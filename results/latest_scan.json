@@ -1,20 +1,20 @@
 {
- "scanned_at": "2026-11-15T17:50:56.414264+00:00",
+ "scanned_at": "2026-11-15T17:52:57.199026+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 30.6,
+ "loop_uptime_min": 32.6,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 580870,
-   "last_tick_age_s": 0.1
+   "markets": 607367,
+   "last_tick_age_s": 0.2
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 6700,
-   "last_tick_age_s": 6.0
+   "last_tick_age_s": 1.0
   },
   {
    "venue": "pmglobal",
@@ -36,36 +36,36 @@
   }
  ],
  "totals": {
-  "markets_tracked": 587678,
+  "markets_tracked": 614175,
   "pairs_married": 0,
   "arbitrages": 0
  },
  "stats": {
-  "commits": 14,
-  "gist_errors": 32,
+  "commits": 15,
+  "gist_errors": 35,
   "hot_errors": 0,
-  "kalshi.sweeps": 204,
-  "kalshi.ticks": 7434862,
-  "kalshi.updates": 5664184,
-  "kalshi.ws_ticks": 7434862,
-  "kalshi.ws_trades": 562491,
-  "novig.sweep_errors": 203,
-  "pmglobal.rest_updates": 1727,
-  "pmglobal.sweeps": 203,
-  "pmglobal.ticks": 24564,
-  "pmglobal.updates": 3425,
-  "pmglobal.ws_msgs": 578238,
-  "pmglobal.ws_ticks": 4164,
-  "pmus.rest_updates": 8624,
-  "pmus.sweeps": 203,
-  "pmus.ticks": 1350188,
-  "pmus.updates": 8624,
-  "pmus_x.last_count": 6592,
-  "pmus_x.sweeps": 204,
-  "prophetx.ws_errors": 103,
+  "kalshi.sweeps": 216,
+  "kalshi.ticks": 7888775,
+  "kalshi.updates": 6000158,
+  "kalshi.ws_ticks": 7888775,
+  "kalshi.ws_trades": 603693,
+  "novig.sweep_errors": 215,
+  "pmglobal.rest_updates": 1835,
+  "pmglobal.sweeps": 215,
+  "pmglobal.ticks": 26091,
+  "pmglobal.updates": 3640,
+  "pmglobal.ws_msgs": 611158,
+  "pmglobal.ws_ticks": 4491,
+  "pmus.rest_updates": 8859,
+  "pmus.sweeps": 216,
+  "pmus.ticks": 1435844,
+  "pmus.updates": 8859,
+  "pmus_x.last_count": 6588,
+  "pmus_x.sweeps": 217,
+  "prophetx.ws_errors": 110,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 203,
-  "supa_errors": 609
+  "pxboard.sweeps": 215,
+  "supa_errors": 646
  },
  "arbitrages": []
 }
