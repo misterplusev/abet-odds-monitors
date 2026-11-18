@@ -1,26 +1,26 @@
 {
- "scanned_at": "2026-11-18T20:01:16.515844+00:00",
+ "scanned_at": "2026-11-18T22:41:49.674735+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 335.0,
+ "loop_uptime_min": 2.4,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 1207357,
-   "last_tick_age_s": 0.3
+   "markets": 39732,
+   "last_tick_age_s": 0.0
   },
   {
    "venue": "pmus",
    "state": "OK",
-   "markets": 6628,
-   "last_tick_age_s": 7.6
+   "markets": 6561,
+   "last_tick_age_s": 0.1
   },
   {
    "venue": "pmglobal",
    "state": "OK",
-   "markets": 168,
-   "last_tick_age_s": 0.6
+   "markets": 100,
+   "last_tick_age_s": 0.0
   },
   {
    "venue": "novig",
@@ -36,362 +36,36 @@
   }
  ],
  "totals": {
-  "markets_tracked": 1214153,
-  "pairs_married": 25,
-  "arbitrages": 14
+  "markets_tracked": 46393,
+  "pairs_married": 0,
+  "arbitrages": 0
  },
  "stats": {
-  "commits": 163,
-  "gist_errors": 347,
+  "gist_errors": 3,
   "hot_errors": 0,
-  "kalshi.rest_updates": 81,
-  "kalshi.sweeps": 1784,
-  "kalshi.ticks": 35227345,
-  "kalshi.updates": 22627965,
-  "kalshi.ws_ticks": 35227244,
-  "kalshi.ws_trades": 3929541,
-  "live_evals_fired": 3,
-  "novig.sweep_errors": 1783,
-  "pairs_blocked_antonym_date": 693,
-  "pmglobal.rest_updates": 7437,
-  "pmglobal.sweeps": 1783,
-  "pmglobal.ticks": 210650,
-  "pmglobal.updates": 15734,
-  "pmglobal.ws_msgs": 4790681,
-  "pmglobal.ws_ticks": 32250,
-  "pmus.rest_updates": 22764,
-  "pmus.sweeps": 1783,
-  "pmus.ticks": 11566697,
-  "pmus.updates": 22764,
-  "pmus_x.last_count": 6490,
-  "pmus_x.sweeps": 1784,
-  "prophetx.ws_errors": 1188,
+  "kalshi.sweeps": 13,
+  "kalshi.ticks": 268156,
+  "kalshi.updates": 202779,
+  "kalshi.ws_ticks": 268156,
+  "kalshi.ws_trades": 32164,
+  "novig.sweep_errors": 12,
+  "pairs_blocked_antonym_date": 16,
+  "pmglobal.rest_updates": 233,
+  "pmglobal.sweeps": 12,
+  "pmglobal.ticks": 1698,
+  "pmglobal.updates": 413,
+  "pmglobal.ws_msgs": 51099,
+  "pmglobal.ws_ticks": 398,
+  "pmus.rest_updates": 6668,
+  "pmus.sweeps": 13,
+  "pmus.ticks": 91299,
+  "pmus.updates": 6668,
+  "pmus_x.last_count": 6543,
+  "pmus_x.sweeps": 14,
+  "prophetx.ws_errors": 8,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 1783,
-  "supa_errors": 5379
+  "pxboard.sweeps": 12,
+  "supa_errors": 42
  },
- "arbitrages": [
-  {
-   "buy_yes": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "ask_cents": 6
-   },
-   "buy_no": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166145"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "no_cost_cents": 75
-   },
-   "total_cost_cents": 83,
-   "edge_bps": 1700,
-   "detected_at": "2026-11-18T19:30:49.970445+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "ask_cents": 6
-   },
-   "buy_no": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166136"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "no_cost_cents": 76
-   },
-   "total_cost_cents": 84,
-   "edge_bps": 1600,
-   "detected_at": "2026-11-18T20:01:16.515755+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166126"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 2
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 97,
-   "edge_bps": 300,
-   "detected_at": "2026-11-18T20:01:16.515737+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166130"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 2
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 97,
-   "edge_bps": 300,
-   "detected_at": "2026-11-18T20:01:16.515772+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166134"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 2
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 97,
-   "edge_bps": 300,
-   "detected_at": "2026-11-18T20:01:16.515783+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "ask_cents": 6
-   },
-   "buy_no": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166132"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "no_cost_cents": 91
-   },
-   "total_cost_cents": 98,
-   "edge_bps": 200,
-   "detected_at": "2026-11-18T20:01:16.515731+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166129"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 3
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 98,
-   "edge_bps": 200,
-   "detected_at": "2026-11-18T20:01:16.515750+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166128"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 3
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 98,
-   "edge_bps": 200,
-   "detected_at": "2026-11-18T20:01:16.515763+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "520904"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 3
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 98,
-   "edge_bps": 200,
-   "detected_at": "2026-11-18T20:01:16.515788+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166137"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 4
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 99,
-   "edge_bps": 100,
-   "detected_at": "2026-11-18T18:59:28.768442+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166143"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 4
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 99,
-   "edge_bps": 100,
-   "detected_at": "2026-11-18T20:01:16.515711+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166140"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 4
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 99,
-   "edge_bps": 100,
-   "detected_at": "2026-11-18T20:01:16.515743+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166133"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 4
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 99,
-   "edge_bps": 100,
-   "detected_at": "2026-11-18T20:01:16.515767+00:00"
-  },
-  {
-   "buy_yes": {
-    "venue": "pmus",
-    "key": [
-     "pmus",
-     "166127"
-    ],
-    "title": "TIME Person of the Year 2026",
-    "ask_cents": 4
-   },
-   "buy_no": {
-    "venue": "pmglobal",
-    "key": [
-     "pmglobal",
-     "0xba0808fbb35d07e14ecf98e22ca74bc4b5613947f614029432337298af267e4d"
-    ],
-    "title": "Will Donald Trump be TIME Person of the Year 2026?",
-    "no_cost_cents": 94
-   },
-   "total_cost_cents": 99,
-   "edge_bps": 100,
-   "detected_at": "2026-11-18T20:01:16.515793+00:00"
-  }
- ]
+ "arbitrages": []
 }
