@@ -1,26 +1,26 @@
 {
- "scanned_at": "2026-11-18T19:09:20.125358+00:00",
+ "scanned_at": "2026-11-18T19:11:28.099312+00:00",
  "engine": "desk_daemon (persistent loop)",
- "loop_uptime_min": 283.1,
+ "loop_uptime_min": 285.2,
  "min_edge_bps": 30,
  "venues": [
   {
    "venue": "kalshi",
    "state": "OK",
-   "markets": 1018010,
+   "markets": 1024290,
    "last_tick_age_s": 0.3
   },
   {
    "venue": "pmus",
    "state": "OK",
    "markets": 6628,
-   "last_tick_age_s": 6.8
+   "last_tick_age_s": 0.4
   },
   {
    "venue": "pmglobal",
    "state": "OK",
    "markets": 155,
-   "last_tick_age_s": 1.2
+   "last_tick_age_s": 0.6
   },
   {
    "venue": "novig",
@@ -36,39 +36,39 @@
   }
  ],
  "totals": {
-  "markets_tracked": 1024793,
+  "markets_tracked": 1031073,
   "pairs_married": 25,
   "arbitrages": 14
  },
  "stats": {
-  "commits": 137,
-  "gist_errors": 293,
+  "commits": 138,
+  "gist_errors": 295,
   "hot_errors": 0,
   "kalshi.rest_updates": 81,
-  "kalshi.sweeps": 1531,
-  "kalshi.ticks": 29238212,
-  "kalshi.updates": 18738434,
-  "kalshi.ws_ticks": 29238111,
-  "kalshi.ws_trades": 3277818,
+  "kalshi.sweeps": 1541,
+  "kalshi.ticks": 29463012,
+  "kalshi.updates": 18884013,
+  "kalshi.ws_ticks": 29462911,
+  "kalshi.ws_trades": 3298846,
   "live_evals_fired": 1,
-  "novig.sweep_errors": 1530,
-  "pairs_blocked_antonym_date": 376,
-  "pmglobal.rest_updates": 6446,
-  "pmglobal.sweeps": 1530,
-  "pmglobal.ticks": 180863,
-  "pmglobal.updates": 13820,
-  "pmglobal.ws_msgs": 4342848,
-  "pmglobal.ws_ticks": 27763,
-  "pmus.rest_updates": 20469,
-  "pmus.sweeps": 1530,
-  "pmus.ticks": 9925299,
-  "pmus.updates": 20469,
-  "pmus_x.last_count": 6499,
-  "pmus_x.sweeps": 1531,
-  "prophetx.ws_errors": 1018,
+  "novig.sweep_errors": 1540,
+  "pairs_blocked_antonym_date": 389,
+  "pmglobal.rest_updates": 6498,
+  "pmglobal.sweeps": 1540,
+  "pmglobal.ticks": 182132,
+  "pmglobal.updates": 13941,
+  "pmglobal.ws_msgs": 4373105,
+  "pmglobal.ws_ticks": 28032,
+  "pmus.rest_updates": 20560,
+  "pmus.sweeps": 1541,
+  "pmus.ticks": 9996509,
+  "pmus.updates": 20560,
+  "pmus_x.last_count": 6457,
+  "pmus_x.sweeps": 1542,
+  "prophetx.ws_errors": 1025,
   "px.evt_scanned": 0,
-  "pxboard.sweeps": 1530,
-  "supa_errors": 4619
+  "pxboard.sweeps": 1540,
+  "supa_errors": 4650
  },
  "arbitrages": [
   {
@@ -92,7 +92,7 @@
    },
    "total_cost_cents": 83,
    "edge_bps": 1700,
-   "detected_at": "2026-11-18T19:09:20.125302+00:00"
+   "detected_at": "2026-11-18T19:11:28.099257+00:00"
   },
   {
    "buy_yes": {
@@ -115,7 +115,7 @@
    },
    "total_cost_cents": 84,
    "edge_bps": 1600,
-   "detected_at": "2026-11-18T19:09:20.125257+00:00"
+   "detected_at": "2026-11-18T19:11:28.099213+00:00"
   },
   {
    "buy_yes": {
@@ -138,7 +138,7 @@
    },
    "total_cost_cents": 97,
    "edge_bps": 300,
-   "detected_at": "2026-11-18T19:09:20.125239+00:00"
+   "detected_at": "2026-11-18T19:11:28.099196+00:00"
   },
   {
    "buy_yes": {
@@ -161,7 +161,7 @@
    },
    "total_cost_cents": 97,
    "edge_bps": 300,
-   "detected_at": "2026-11-18T19:09:20.125274+00:00"
+   "detected_at": "2026-11-18T19:11:28.099230+00:00"
   },
   {
    "buy_yes": {
@@ -184,7 +184,7 @@
    },
    "total_cost_cents": 97,
    "edge_bps": 300,
-   "detected_at": "2026-11-18T19:09:20.125287+00:00"
+   "detected_at": "2026-11-18T19:11:28.099242+00:00"
   },
   {
    "buy_yes": {
@@ -207,7 +207,7 @@
    },
    "total_cost_cents": 98,
    "edge_bps": 200,
-   "detected_at": "2026-11-18T19:09:20.125232+00:00"
+   "detected_at": "2026-11-18T19:11:28.099189+00:00"
   },
   {
    "buy_yes": {
@@ -230,7 +230,7 @@
    },
    "total_cost_cents": 98,
    "edge_bps": 200,
-   "detected_at": "2026-11-18T19:09:20.125252+00:00"
+   "detected_at": "2026-11-18T19:11:28.099208+00:00"
   },
   {
    "buy_yes": {
@@ -253,7 +253,7 @@
    },
    "total_cost_cents": 98,
    "edge_bps": 200,
-   "detected_at": "2026-11-18T19:09:20.125265+00:00"
+   "detected_at": "2026-11-18T19:11:28.099221+00:00"
   },
   {
    "buy_yes": {
@@ -276,7 +276,7 @@
    },
    "total_cost_cents": 98,
    "edge_bps": 200,
-   "detected_at": "2026-11-18T19:09:20.125292+00:00"
+   "detected_at": "2026-11-18T19:11:28.099246+00:00"
   },
   {
    "buy_yes": {
@@ -322,7 +322,7 @@
    },
    "total_cost_cents": 99,
    "edge_bps": 100,
-   "detected_at": "2026-11-18T19:09:20.125214+00:00"
+   "detected_at": "2026-11-18T19:11:28.099163+00:00"
   },
   {
    "buy_yes": {
@@ -345,7 +345,7 @@
    },
    "total_cost_cents": 99,
    "edge_bps": 100,
-   "detected_at": "2026-11-18T19:09:20.125245+00:00"
+   "detected_at": "2026-11-18T19:11:28.099202+00:00"
   },
   {
    "buy_yes": {
@@ -368,7 +368,7 @@
    },
    "total_cost_cents": 99,
    "edge_bps": 100,
-   "detected_at": "2026-11-18T19:09:20.125269+00:00"
+   "detected_at": "2026-11-18T19:11:28.099225+00:00"
   },
   {
    "buy_yes": {
@@ -391,7 +391,7 @@
    },
    "total_cost_cents": 99,
    "edge_bps": 100,
-   "detected_at": "2026-11-18T19:09:20.125296+00:00"
+   "detected_at": "2026-11-18T19:11:28.099251+00:00"
   }
  ]
 }
